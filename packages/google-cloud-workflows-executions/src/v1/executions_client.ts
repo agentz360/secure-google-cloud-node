@@ -48,7 +48,7 @@ export class ExecutionsClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
-  private _log = logging.log('workflow-executions');
+  private _log = logging.log('workflows');
 
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
