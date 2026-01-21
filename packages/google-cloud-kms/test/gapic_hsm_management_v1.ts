@@ -21,7 +21,7 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
-import * as autokeyModule from '../src';
+import * as hsmmanagementModule from '../src';
 
 import {PassThrough} from 'stream';
 
@@ -115,16 +115,16 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
     return sinon.stub().returns(asyncIterable);
 }
 
-describe('v1.AutokeyClient', () => {
+describe('v1.HsmManagementClient', () => {
     describe('Common methods', () => {
         it('has apiEndpoint', () => {
-            const client = new autokeyModule.v1.AutokeyClient();
+            const client = new hsmmanagementModule.v1.HsmManagementClient();
             const apiEndpoint = client.apiEndpoint;
             assert.strictEqual(apiEndpoint, 'cloudkms.googleapis.com');
         });
 
         it('has universeDomain', () => {
-            const client = new autokeyModule.v1.AutokeyClient();
+            const client = new hsmmanagementModule.v1.HsmManagementClient();
             const universeDomain = client.universeDomain;
             assert.strictEqual(universeDomain, "googleapis.com");
         });
@@ -132,7 +132,7 @@ describe('v1.AutokeyClient', () => {
         if (typeof process === 'object' && typeof process.emitWarning === 'function') {
             it('throws DeprecationWarning if static servicePath is used', () => {
                 const stub = sinon.stub(process, 'emitWarning');
-                const servicePath = autokeyModule.v1.AutokeyClient.servicePath;
+                const servicePath = hsmmanagementModule.v1.HsmManagementClient.servicePath;
                 assert.strictEqual(servicePath, 'cloudkms.googleapis.com');
                 assert(stub.called);
                 stub.restore();
@@ -140,20 +140,20 @@ describe('v1.AutokeyClient', () => {
 
             it('throws DeprecationWarning if static apiEndpoint is used', () => {
                 const stub = sinon.stub(process, 'emitWarning');
-                const apiEndpoint = autokeyModule.v1.AutokeyClient.apiEndpoint;
+                const apiEndpoint = hsmmanagementModule.v1.HsmManagementClient.apiEndpoint;
                 assert.strictEqual(apiEndpoint, 'cloudkms.googleapis.com');
                 assert(stub.called);
                 stub.restore();
             });
         }
         it('sets apiEndpoint according to universe domain camelCase', () => {
-            const client = new autokeyModule.v1.AutokeyClient({universeDomain: 'example.com'});
+            const client = new hsmmanagementModule.v1.HsmManagementClient({universeDomain: 'example.com'});
             const servicePath = client.apiEndpoint;
             assert.strictEqual(servicePath, 'cloudkms.example.com');
         });
 
         it('sets apiEndpoint according to universe domain snakeCase', () => {
-            const client = new autokeyModule.v1.AutokeyClient({universe_domain: 'example.com'});
+            const client = new hsmmanagementModule.v1.HsmManagementClient({universe_domain: 'example.com'});
             const servicePath = client.apiEndpoint;
             assert.strictEqual(servicePath, 'cloudkms.example.com');
         });
@@ -163,7 +163,7 @@ describe('v1.AutokeyClient', () => {
                 it('sets apiEndpoint from environment variable', () => {
                     const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
                     process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
-                    const client = new autokeyModule.v1.AutokeyClient();
+                    const client = new hsmmanagementModule.v1.HsmManagementClient();
                     const servicePath = client.apiEndpoint;
                     assert.strictEqual(servicePath, 'cloudkms.example.com');
                     if (saved) {
@@ -176,7 +176,7 @@ describe('v1.AutokeyClient', () => {
                 it('value configured in code has priority over environment variable', () => {
                     const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
                     process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
-                    const client = new autokeyModule.v1.AutokeyClient({universeDomain: 'configured.example.com'});
+                    const client = new hsmmanagementModule.v1.HsmManagementClient({universeDomain: 'configured.example.com'});
                     const servicePath = client.apiEndpoint;
                     assert.strictEqual(servicePath, 'cloudkms.configured.example.com');
                     if (saved) {
@@ -188,55 +188,55 @@ describe('v1.AutokeyClient', () => {
             });
         }
         it('does not allow setting both universeDomain and universe_domain', () => {
-            assert.throws(() => { new autokeyModule.v1.AutokeyClient({universe_domain: 'example.com', universeDomain: 'example.net'}); });
+            assert.throws(() => { new hsmmanagementModule.v1.HsmManagementClient({universe_domain: 'example.com', universeDomain: 'example.net'}); });
         });
 
         it('has port', () => {
-            const port = autokeyModule.v1.AutokeyClient.port;
+            const port = hsmmanagementModule.v1.HsmManagementClient.port;
             assert(port);
             assert(typeof port === 'number');
         });
 
         it('should create a client with no option', () => {
-            const client = new autokeyModule.v1.AutokeyClient();
+            const client = new hsmmanagementModule.v1.HsmManagementClient();
             assert(client);
         });
 
         it('should create a client with gRPC fallback', () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 fallback: true,
             });
             assert(client);
         });
 
         it('has initialize method and supports deferred initialization', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
-            assert.strictEqual(client.autokeyStub, undefined);
+            assert.strictEqual(client.hsmManagementStub, undefined);
             await client.initialize();
-            assert(client.autokeyStub);
+            assert(client.hsmManagementStub);
         });
 
         it('has close method for the initialized client', done => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             client.initialize().catch(err => {throw err});
-            assert(client.autokeyStub);
+            assert(client.hsmManagementStub);
             client.close().then(() => {
                 done();
             }).catch(err => {throw err});
         });
 
         it('has close method for the non-initialized client', done => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
-            assert.strictEqual(client.autokeyStub, undefined);
+            assert.strictEqual(client.hsmManagementStub, undefined);
             client.close().then(() => {
                 done();
             }).catch(err => {throw err});
@@ -244,7 +244,7 @@ describe('v1.AutokeyClient', () => {
 
         it('has getProjectId method', async () => {
             const fakeProjectId = 'fake-project-id';
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -256,7 +256,7 @@ describe('v1.AutokeyClient', () => {
 
         it('has getProjectId method with callback', async () => {
             const fakeProjectId = 'fake-project-id';
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -275,55 +275,55 @@ describe('v1.AutokeyClient', () => {
         });
     });
 
-    describe('getKeyHandle', () => {
-        it('invokes getKeyHandle without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+    describe('getSingleTenantHsmInstance', () => {
+        it('invokes getSingleTenantHsmInstance without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.GetKeyHandleRequest()
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.GetKeyHandleRequest', ['name']);
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest', ['name']);
             request.name = defaultValue1;
             const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
-              new protos.google.cloud.kms.v1.KeyHandle()
+              new protos.google.cloud.kms.v1.SingleTenantHsmInstance()
             );
-            client.innerApiCalls.getKeyHandle = stubSimpleCall(expectedResponse);
-            const [response] = await client.getKeyHandle(request);
+            client.innerApiCalls.getSingleTenantHsmInstance = stubSimpleCall(expectedResponse);
+            const [response] = await client.getSingleTenantHsmInstance(request);
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.getKeyHandle as SinonStub)
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.getKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes getKeyHandle without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes getSingleTenantHsmInstance without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.GetKeyHandleRequest()
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.GetKeyHandleRequest', ['name']);
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest', ['name']);
             request.name = defaultValue1;
             const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
-              new protos.google.cloud.kms.v1.KeyHandle()
+              new protos.google.cloud.kms.v1.SingleTenantHsmInstance()
             );
-            client.innerApiCalls.getKeyHandle = stubSimpleCallWithCallback(expectedResponse);
+            client.innerApiCalls.getSingleTenantHsmInstance = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
-                 client.getKeyHandle(
+                 client.getSingleTenantHsmInstance(
                     request,
-                    (err?: Error|null, result?: protos.google.cloud.kms.v1.IKeyHandle|null) => {
+                    (err?: Error|null, result?: protos.google.cloud.kms.v1.ISingleTenantHsmInstance|null) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -333,107 +333,431 @@ describe('v1.AutokeyClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.getKeyHandle as SinonStub)
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.getKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes getKeyHandle with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes getSingleTenantHsmInstance with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.GetKeyHandleRequest()
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.GetKeyHandleRequest', ['name']);
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest', ['name']);
             request.name = defaultValue1;
             const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.innerApiCalls.getKeyHandle = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.getKeyHandle(request), expectedError);
-            const actualRequest = (client.innerApiCalls.getKeyHandle as SinonStub)
+            client.innerApiCalls.getSingleTenantHsmInstance = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getSingleTenantHsmInstance(request), expectedError);
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.getKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes getKeyHandle with closed client', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes getSingleTenantHsmInstance with closed client', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.GetKeyHandleRequest()
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.GetKeyHandleRequest', ['name']);
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceRequest', ['name']);
             request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close().catch(err => {throw err});
-            await assert.rejects(client.getKeyHandle(request), expectedError);
+            await assert.rejects(client.getSingleTenantHsmInstance(request), expectedError);
         });
     });
 
-    describe('createKeyHandle', () => {
-        it('invokes createKeyHandle without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+    describe('approveSingleTenantHsmInstanceProposal', () => {
+        it('invokes approveSingleTenantHsmInstanceProposal without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.CreateKeyHandleRequest()
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.CreateKeyHandleRequest', ['parent']);
-            request.parent = defaultValue1;
-            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+              getTypeDefaultValue('.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
-              new protos.google.longrunning.Operation()
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalResponse()
             );
-            client.innerApiCalls.createKeyHandle = stubLongRunningCall(expectedResponse);
-            const [operation] = await client.createKeyHandle(request);
-            const [response] = await operation.promise();
+            client.innerApiCalls.approveSingleTenantHsmInstanceProposal = stubSimpleCall(expectedResponse);
+            const [response] = await client.approveSingleTenantHsmInstanceProposal(request);
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualRequest = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes createKeyHandle without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes approveSingleTenantHsmInstanceProposal without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.CreateKeyHandleRequest()
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.CreateKeyHandleRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalResponse()
+            );
+            client.innerApiCalls.approveSingleTenantHsmInstanceProposal = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.approveSingleTenantHsmInstanceProposal(
+                    request,
+                    (err?: Error|null, result?: protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes approveSingleTenantHsmInstanceProposal with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.approveSingleTenantHsmInstanceProposal = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.approveSingleTenantHsmInstanceProposal(request), expectedError);
+            const actualRequest = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.approveSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes approveSingleTenantHsmInstanceProposal with closed client', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedError = new Error('The client has already been closed.');
+            client.close().catch(err => {throw err});
+            await assert.rejects(client.approveSingleTenantHsmInstanceProposal(request), expectedError);
+        });
+    });
+
+    describe('getSingleTenantHsmInstanceProposal', () => {
+        it('invokes getSingleTenantHsmInstanceProposal without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()
+            );
+            client.innerApiCalls.getSingleTenantHsmInstanceProposal = stubSimpleCall(expectedResponse);
+            const [response] = await client.getSingleTenantHsmInstanceProposal(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes getSingleTenantHsmInstanceProposal without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()
+            );
+            client.innerApiCalls.getSingleTenantHsmInstanceProposal = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getSingleTenantHsmInstanceProposal(
+                    request,
+                    (err?: Error|null, result?: protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes getSingleTenantHsmInstanceProposal with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getSingleTenantHsmInstanceProposal = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getSingleTenantHsmInstanceProposal(request), expectedError);
+            const actualRequest = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes getSingleTenantHsmInstanceProposal with closed client', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.GetSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedError = new Error('The client has already been closed.');
+            client.close().catch(err => {throw err});
+            await assert.rejects(client.getSingleTenantHsmInstanceProposal(request), expectedError);
+        });
+    });
+
+    describe('deleteSingleTenantHsmInstanceProposal', () => {
+        it('invokes deleteSingleTenantHsmInstanceProposal without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            client.innerApiCalls.deleteSingleTenantHsmInstanceProposal = stubSimpleCall(expectedResponse);
+            const [response] = await client.deleteSingleTenantHsmInstanceProposal(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes deleteSingleTenantHsmInstanceProposal without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            client.innerApiCalls.deleteSingleTenantHsmInstanceProposal = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.deleteSingleTenantHsmInstanceProposal(
+                    request,
+                    (err?: Error|null, result?: protos.google.protobuf.IEmpty|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes deleteSingleTenantHsmInstanceProposal with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.deleteSingleTenantHsmInstanceProposal = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.deleteSingleTenantHsmInstanceProposal(request), expectedError);
+            const actualRequest = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes deleteSingleTenantHsmInstanceProposal with closed client', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.DeleteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedError = new Error('The client has already been closed.');
+            client.close().catch(err => {throw err});
+            await assert.rejects(client.deleteSingleTenantHsmInstanceProposal(request), expectedError);
+        });
+    });
+
+    describe('createSingleTenantHsmInstance', () => {
+        it('invokes createSingleTenantHsmInstance without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
               new protos.google.longrunning.Operation()
             );
-            client.innerApiCalls.createKeyHandle = stubLongRunningCallWithCallback(expectedResponse);
+            client.innerApiCalls.createSingleTenantHsmInstance = stubLongRunningCall(expectedResponse);
+            const [operation] = await client.createSingleTenantHsmInstance(request);
+            const [response] = await operation.promise();
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes createSingleTenantHsmInstance without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
+            client.innerApiCalls.createSingleTenantHsmInstance = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
-                 client.createKeyHandle(
+                 client.createSingleTenantHsmInstance(
                     request,
                     (err?: Error|null,
-                     result?: LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>|null
+                     result?: LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>|null
                     ) => {
                         if (err) {
                             reject(err);
@@ -442,68 +766,68 @@ describe('v1.AutokeyClient', () => {
                         }
                     });
             });
-            const operation = await promise as LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>;
+            const operation = await promise as LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes createKeyHandle with call error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes createSingleTenantHsmInstance with call error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.CreateKeyHandleRequest()
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.CreateKeyHandleRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.innerApiCalls.createKeyHandle = stubLongRunningCall(undefined, expectedError);
-            await assert.rejects(client.createKeyHandle(request), expectedError);
-            const actualRequest = (client.innerApiCalls.createKeyHandle as SinonStub)
+            client.innerApiCalls.createSingleTenantHsmInstance = stubLongRunningCall(undefined, expectedError);
+            await assert.rejects(client.createSingleTenantHsmInstance(request), expectedError);
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes createKeyHandle with LRO error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes createSingleTenantHsmInstance with LRO error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.CreateKeyHandleRequest()
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.CreateKeyHandleRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.innerApiCalls.createKeyHandle = stubLongRunningCall(undefined, undefined, expectedError);
-            const [operation] = await client.createKeyHandle(request);
+            client.innerApiCalls.createSingleTenantHsmInstance = stubLongRunningCall(undefined, undefined, expectedError);
+            const [operation] = await client.createSingleTenantHsmInstance(request);
             await assert.rejects(operation.promise(), expectedError);
-            const actualRequest = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.createKeyHandle as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstance as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes checkCreateKeyHandleProgress without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes checkCreateSingleTenantHsmInstanceProgress without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -516,14 +840,14 @@ describe('v1.AutokeyClient', () => {
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
 
             client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
-            const decodedOperation = await client.checkCreateKeyHandleProgress(expectedResponse.name);
+            const decodedOperation = await client.checkCreateSingleTenantHsmInstanceProgress(expectedResponse.name);
             assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
             assert(decodedOperation.metadata);
             assert((client.operationsClient.getOperation as SinonStub).getCall(0));
         });
 
-        it('invokes checkCreateKeyHandleProgress with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes checkCreateSingleTenantHsmInstanceProgress with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -531,63 +855,371 @@ describe('v1.AutokeyClient', () => {
             const expectedError = new Error('expected');
 
             client.operationsClient.getOperation = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.checkCreateKeyHandleProgress(''), expectedError);
+            await assert.rejects(client.checkCreateSingleTenantHsmInstanceProgress(''), expectedError);
             assert((client.operationsClient.getOperation as SinonStub)
                 .getCall(0));
         });
     });
 
-    describe('listKeyHandles', () => {
-        it('invokes listKeyHandles without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
+    describe('createSingleTenantHsmInstanceProposal', () => {
+        it('invokes createSingleTenantHsmInstanceProposal without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest', ['parent']);
             request.parent = defaultValue1;
-            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;const expectedResponse = [
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-            ];
-            client.innerApiCalls.listKeyHandles = stubSimpleCall(expectedResponse);
-            const [response] = await client.listKeyHandles(request);
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
+            client.innerApiCalls.createSingleTenantHsmInstanceProposal = stubLongRunningCall(expectedResponse);
+            const [operation] = await client.createSingleTenantHsmInstanceProposal(request);
+            const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.listKeyHandles as SinonStub)
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.listKeyHandles as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes listKeyHandles without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes createSingleTenantHsmInstanceProposal without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
+            client.innerApiCalls.createSingleTenantHsmInstanceProposal = stubLongRunningCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.createSingleTenantHsmInstanceProposal(
+                    request,
+                    (err?: Error|null,
+                     result?: LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>|null
+                    ) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const operation = await promise as LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>;
+            const [response] = await operation.promise();
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes createSingleTenantHsmInstanceProposal with call error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.createSingleTenantHsmInstanceProposal = stubLongRunningCall(undefined, expectedError);
+            await assert.rejects(client.createSingleTenantHsmInstanceProposal(request), expectedError);
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes createSingleTenantHsmInstanceProposal with LRO error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.createSingleTenantHsmInstanceProposal = stubLongRunningCall(undefined, undefined, expectedError);
+            const [operation] = await client.createSingleTenantHsmInstanceProposal(request);
+            await assert.rejects(operation.promise(), expectedError);
+            const actualRequest = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes checkCreateSingleTenantHsmInstanceProposalProgress without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
+            expectedResponse.name = 'test';
+            expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+            expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
+
+            client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+            const decodedOperation = await client.checkCreateSingleTenantHsmInstanceProposalProgress(expectedResponse.name);
+            assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+            assert(decodedOperation.metadata);
+            assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+        });
+
+        it('invokes checkCreateSingleTenantHsmInstanceProposalProgress with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const expectedError = new Error('expected');
+
+            client.operationsClient.getOperation = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.checkCreateSingleTenantHsmInstanceProposalProgress(''), expectedError);
+            assert((client.operationsClient.getOperation as SinonStub)
+                .getCall(0));
+        });
+    });
+
+    describe('executeSingleTenantHsmInstanceProposal', () => {
+        it('invokes executeSingleTenantHsmInstanceProposal without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
+            client.innerApiCalls.executeSingleTenantHsmInstanceProposal = stubLongRunningCall(expectedResponse);
+            const [operation] = await client.executeSingleTenantHsmInstanceProposal(request);
+            const [response] = await operation.promise();
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes executeSingleTenantHsmInstanceProposal without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
+            client.innerApiCalls.executeSingleTenantHsmInstanceProposal = stubLongRunningCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.executeSingleTenantHsmInstanceProposal(
+                    request,
+                    (err?: Error|null,
+                     result?: LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>|null
+                    ) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const operation = await promise as LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>;
+            const [response] = await operation.promise();
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes executeSingleTenantHsmInstanceProposal with call error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.executeSingleTenantHsmInstanceProposal = stubLongRunningCall(undefined, expectedError);
+            await assert.rejects(client.executeSingleTenantHsmInstanceProposal(request), expectedError);
+            const actualRequest = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes executeSingleTenantHsmInstanceProposal with LRO error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.executeSingleTenantHsmInstanceProposal = stubLongRunningCall(undefined, undefined, expectedError);
+            const [operation] = await client.executeSingleTenantHsmInstanceProposal(request);
+            await assert.rejects(operation.promise(), expectedError);
+            const actualRequest = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.executeSingleTenantHsmInstanceProposal as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes checkExecuteSingleTenantHsmInstanceProposalProgress without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
+            expectedResponse.name = 'test';
+            expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+            expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
+
+            client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+            const decodedOperation = await client.checkExecuteSingleTenantHsmInstanceProposalProgress(expectedResponse.name);
+            assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+            assert(decodedOperation.metadata);
+            assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+        });
+
+        it('invokes checkExecuteSingleTenantHsmInstanceProposalProgress with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const expectedError = new Error('expected');
+
+            client.operationsClient.getOperation = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.checkExecuteSingleTenantHsmInstanceProposalProgress(''), expectedError);
+            assert((client.operationsClient.getOperation as SinonStub)
+                .getCall(0));
+        });
+    });
+
+    describe('listSingleTenantHsmInstances', () => {
+        it('invokes listSingleTenantHsmInstances without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;const expectedResponse = [
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
             ];
-            client.innerApiCalls.listKeyHandles = stubSimpleCallWithCallback(expectedResponse);
+            client.innerApiCalls.listSingleTenantHsmInstances = stubSimpleCall(expectedResponse);
+            const [response] = await client.listSingleTenantHsmInstances(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes listSingleTenantHsmInstances without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;const expectedResponse = [
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+            ];
+            client.innerApiCalls.listSingleTenantHsmInstances = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
-                 client.listKeyHandles(
+                 client.listSingleTenantHsmInstances(
                     request,
-                    (err?: Error|null, result?: protos.google.cloud.kms.v1.IKeyHandle[]|null) => {
+                    (err?: Error|null, result?: protos.google.cloud.kms.v1.ISingleTenantHsmInstance[]|null) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -597,61 +1229,61 @@ describe('v1.AutokeyClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            const actualRequest = (client.innerApiCalls.listKeyHandles as SinonStub)
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.listKeyHandles as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes listKeyHandles with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes listSingleTenantHsmInstances with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.innerApiCalls.listKeyHandles = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.listKeyHandles(request), expectedError);
-            const actualRequest = (client.innerApiCalls.listKeyHandles as SinonStub)
+            client.innerApiCalls.listSingleTenantHsmInstances = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.listSingleTenantHsmInstances(request), expectedError);
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
                 .getCall(0).args[0];
             assert.deepStrictEqual(actualRequest, request);
-            const actualHeaderRequestParams = (client.innerApiCalls.listKeyHandles as SinonStub)
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstances as SinonStub)
                 .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
             assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes listKeyHandlesStream without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes listSingleTenantHsmInstancesStream without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedResponse = [
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
             ];
-            client.descriptors.page.listKeyHandles.createStream = stubPageStreamingCall(expectedResponse);
-            const stream = client.listKeyHandlesStream(request);
+            client.descriptors.page.listSingleTenantHsmInstances.createStream = stubPageStreamingCall(expectedResponse);
+            const stream = client.listSingleTenantHsmInstancesStream(request);
             const promise = new Promise((resolve, reject) => {
-                const responses: protos.google.cloud.kms.v1.KeyHandle[] = [];
-                stream.on('data', (response: protos.google.cloud.kms.v1.KeyHandle) => {
+                const responses: protos.google.cloud.kms.v1.SingleTenantHsmInstance[] = [];
+                stream.on('data', (response: protos.google.cloud.kms.v1.SingleTenantHsmInstance) => {
                     responses.push(response);
                 });
                 stream.on('end', () => {
@@ -663,35 +1295,35 @@ describe('v1.AutokeyClient', () => {
             });
             const responses = await promise;
             assert.deepStrictEqual(responses, expectedResponse);
-            assert((client.descriptors.page.listKeyHandles.createStream as SinonStub)
-                .getCall(0).calledWith(client.innerApiCalls.listKeyHandles, request));
+            assert((client.descriptors.page.listSingleTenantHsmInstances.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSingleTenantHsmInstances, request));
             assert(
-                (client.descriptors.page.listKeyHandles.createStream as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.createStream as SinonStub)
                     .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
                         expectedHeaderRequestParams
                     )
             );
         });
 
-        it('invokes listKeyHandlesStream with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('invokes listSingleTenantHsmInstancesStream with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.descriptors.page.listKeyHandles.createStream = stubPageStreamingCall(undefined, expectedError);
-            const stream = client.listKeyHandlesStream(request);
+            client.descriptors.page.listSingleTenantHsmInstances.createStream = stubPageStreamingCall(undefined, expectedError);
+            const stream = client.listSingleTenantHsmInstancesStream(request);
             const promise = new Promise((resolve, reject) => {
-                const responses: protos.google.cloud.kms.v1.KeyHandle[] = [];
-                stream.on('data', (response: protos.google.cloud.kms.v1.KeyHandle) => {
+                const responses: protos.google.cloud.kms.v1.SingleTenantHsmInstance[] = [];
+                stream.on('data', (response: protos.google.cloud.kms.v1.SingleTenantHsmInstance) => {
                     responses.push(response);
                 });
                 stream.on('end', () => {
@@ -702,79 +1334,324 @@ describe('v1.AutokeyClient', () => {
                 });
             });
             await assert.rejects(promise, expectedError);
-            assert((client.descriptors.page.listKeyHandles.createStream as SinonStub)
-                .getCall(0).calledWith(client.innerApiCalls.listKeyHandles, request));
+            assert((client.descriptors.page.listSingleTenantHsmInstances.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSingleTenantHsmInstances, request));
             assert(
-                (client.descriptors.page.listKeyHandles.createStream as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.createStream as SinonStub)
                     .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
                          expectedHeaderRequestParams
                     ) 
             );
         });
 
-        it('uses async iteration with listKeyHandles without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('uses async iteration with listSingleTenantHsmInstances without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedResponse = [
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
-              generateSampleMessage(new protos.google.cloud.kms.v1.KeyHandle()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstance()),
             ];
-            client.descriptors.page.listKeyHandles.asyncIterate = stubAsyncIterationCall(expectedResponse);
-            const responses: protos.google.cloud.kms.v1.IKeyHandle[] = [];
-            const iterable = client.listKeyHandlesAsync(request);
+            client.descriptors.page.listSingleTenantHsmInstances.asyncIterate = stubAsyncIterationCall(expectedResponse);
+            const responses: protos.google.cloud.kms.v1.ISingleTenantHsmInstance[] = [];
+            const iterable = client.listSingleTenantHsmInstancesAsync(request);
             for await (const resource of iterable) {
                 responses.push(resource!);
             }
             assert.deepStrictEqual(responses, expectedResponse);
             assert.deepStrictEqual(
-                (client.descriptors.page.listKeyHandles.asyncIterate as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
             assert(
-                (client.descriptors.page.listKeyHandles.asyncIterate as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.asyncIterate as SinonStub)
                     .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
                         expectedHeaderRequestParams
                     )
             );
         });
 
-        it('uses async iteration with listKeyHandles with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+        it('uses async iteration with listSingleTenantHsmInstances with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.cloud.kms.v1.ListKeyHandlesRequest()
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest()
             );
             const defaultValue1 =
-              getTypeDefaultValue('.google.cloud.kms.v1.ListKeyHandlesRequest', ['parent']);
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstancesRequest', ['parent']);
             request.parent = defaultValue1;
             const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.descriptors.page.listKeyHandles.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
-            const iterable = client.listKeyHandlesAsync(request);
+            client.descriptors.page.listSingleTenantHsmInstances.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
+            const iterable = client.listSingleTenantHsmInstancesAsync(request);
             await assert.rejects(async () => {
-                const responses: protos.google.cloud.kms.v1.IKeyHandle[] = [];
+                const responses: protos.google.cloud.kms.v1.ISingleTenantHsmInstance[] = [];
                 for await (const resource of iterable) {
                     responses.push(resource!);
                 }
             });
             assert.deepStrictEqual(
-                (client.descriptors.page.listKeyHandles.asyncIterate as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
             assert(
-                (client.descriptors.page.listKeyHandles.asyncIterate as SinonStub)
+                (client.descriptors.page.listSingleTenantHsmInstances.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
+            );
+        });
+    });
+
+    describe('listSingleTenantHsmInstanceProposals', () => {
+        it('invokes listSingleTenantHsmInstanceProposals without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;const expectedResponse = [
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+            ];
+            client.innerApiCalls.listSingleTenantHsmInstanceProposals = stubSimpleCall(expectedResponse);
+            const [response] = await client.listSingleTenantHsmInstanceProposals(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes listSingleTenantHsmInstanceProposals without error using callback', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;const expectedResponse = [
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+            ];
+            client.innerApiCalls.listSingleTenantHsmInstanceProposals = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.listSingleTenantHsmInstanceProposals(
+                    request,
+                    (err?: Error|null, result?: protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[]|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes listSingleTenantHsmInstanceProposals with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.listSingleTenantHsmInstanceProposals = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.listSingleTenantHsmInstanceProposals(request), expectedError);
+            const actualRequest = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listSingleTenantHsmInstanceProposals as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes listSingleTenantHsmInstanceProposalsStream without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedResponse = [
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+            ];
+            client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream = stubPageStreamingCall(expectedResponse);
+            const stream = client.listSingleTenantHsmInstanceProposalsStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal[] = [];
+                stream.on('data', (response: protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            const responses = await promise;
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert((client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSingleTenantHsmInstanceProposals, request));
+            assert(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
+            );
+        });
+
+        it('invokes listSingleTenantHsmInstanceProposalsStream with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream = stubPageStreamingCall(undefined, expectedError);
+            const stream = client.listSingleTenantHsmInstanceProposalsStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal[] = [];
+                stream.on('data', (response: protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            await assert.rejects(promise, expectedError);
+            assert((client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listSingleTenantHsmInstanceProposals, request));
+            assert(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
+            );
+        });
+
+        it('uses async iteration with listSingleTenantHsmInstanceProposals without error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedResponse = [
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+              generateSampleMessage(new protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal()),
+            ];
+            client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate = stubAsyncIterationCall(expectedResponse);
+            const responses: protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[] = [];
+            const iterable = client.listSingleTenantHsmInstanceProposalsAsync(request);
+            for await (const resource of iterable) {
+                responses.push(resource!);
+            }
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert.deepStrictEqual(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
+            );
+        });
+
+        it('uses async iteration with listSingleTenantHsmInstanceProposals with error', async () => {
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            await client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
+            const iterable = client.listSingleTenantHsmInstanceProposalsAsync(request);
+            await assert.rejects(async () => {
+                const responses: protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[] = [];
+                for await (const resource of iterable) {
+                    responses.push(resource!);
+                }
+            });
+            assert.deepStrictEqual(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert(
+                (client.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate as SinonStub)
                     .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
                         expectedHeaderRequestParams
                     )
@@ -783,7 +1660,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('getIamPolicy', () => {
         it('invokes getIamPolicy without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -810,7 +1687,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
         it('invokes getIamPolicy without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -849,7 +1726,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes getIamPolicy with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -875,7 +1752,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('setIamPolicy', () => {
         it('invokes setIamPolicy without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -902,7 +1779,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
         it('invokes setIamPolicy without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -941,7 +1818,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes setIamPolicy with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -967,7 +1844,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('testIamPermissions', () => {
         it('invokes testIamPermissions without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -994,7 +1871,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
         it('invokes testIamPermissions without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1033,7 +1910,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes testIamPermissions with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1059,7 +1936,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('getLocation', () => {
         it('invokes getLocation without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1086,7 +1963,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
         it('invokes getLocation without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1128,7 +2005,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes getLocation with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1154,7 +2031,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('listLocationsAsync', () => {
         it('uses async iteration with listLocations without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1193,7 +2070,7 @@ describe('v1.AutokeyClient', () => {
             );
         });
         it('uses async iteration with listLocations with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1225,7 +2102,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('getOperation', () => {
         it('invokes getOperation without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1244,7 +2121,7 @@ describe('v1.AutokeyClient', () => {
             );
         });
         it('invokes getOperation without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1276,7 +2153,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes getOperation with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1292,7 +2169,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('cancelOperation', () => {
         it('invokes cancelOperation without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1311,7 +2188,7 @@ describe('v1.AutokeyClient', () => {
             );
         });
         it('invokes cancelOperation without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1343,7 +2220,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes cancelOperation with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1359,7 +2236,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('deleteOperation', () => {
         it('invokes deleteOperation without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1378,7 +2255,7 @@ describe('v1.AutokeyClient', () => {
             );
         });
         it('invokes deleteOperation without error using callback', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1410,7 +2287,7 @@ describe('v1.AutokeyClient', () => {
                 .getCall(0));
         });
         it('invokes deleteOperation with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1426,7 +2303,7 @@ describe('v1.AutokeyClient', () => {
     });
     describe('listOperationsAsync', () => {
         it('uses async iteration with listOperations without error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -1456,7 +2333,7 @@ describe('v1.AutokeyClient', () => {
                     .getCall(0).args[1], request);
         });
         it('uses async iteration with listOperations with error', async () => {
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1486,7 +2363,7 @@ describe('v1.AutokeyClient', () => {
             const expectedParameters = {
                 folder: "folderValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1519,7 +2396,7 @@ describe('v1.AutokeyClient', () => {
                 key_ring: "keyRingValue",
                 crypto_key: "cryptoKeyValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1574,7 +2451,7 @@ describe('v1.AutokeyClient', () => {
                 crypto_key: "cryptoKeyValue",
                 crypto_key_version: "cryptoKeyVersionValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1633,7 +2510,7 @@ describe('v1.AutokeyClient', () => {
                 project: "projectValue",
                 location: "locationValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1672,7 +2549,7 @@ describe('v1.AutokeyClient', () => {
                 location: "locationValue",
                 ekm_connection: "ekmConnectionValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1719,7 +2596,7 @@ describe('v1.AutokeyClient', () => {
                 key_ring: "keyRingValue",
                 import_job: "importJobValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1772,7 +2649,7 @@ describe('v1.AutokeyClient', () => {
                 location: "locationValue",
                 key_handle: "keyHandleValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1818,7 +2695,7 @@ describe('v1.AutokeyClient', () => {
                 location: "locationValue",
                 key_ring: "keyRingValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1863,7 +2740,7 @@ describe('v1.AutokeyClient', () => {
                 project: "projectValue",
                 location: "locationValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1904,7 +2781,7 @@ describe('v1.AutokeyClient', () => {
                 crypto_key: "cryptoKeyValue",
                 crypto_key_version: "cryptoKeyVersionValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -1964,7 +2841,7 @@ describe('v1.AutokeyClient', () => {
                 location: "locationValue",
                 single_tenant_hsm_instance: "singleTenantHsmInstanceValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -2011,7 +2888,7 @@ describe('v1.AutokeyClient', () => {
                 single_tenant_hsm_instance: "singleTenantHsmInstanceValue",
                 proposal: "proposalValue",
             };
-            const client = new autokeyModule.v1.AutokeyClient({
+            const client = new hsmmanagementModule.v1.HsmManagementClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });

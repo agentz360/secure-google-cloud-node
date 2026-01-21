@@ -26,35 +26,24 @@ import {loggingUtils as logging, decodeAnyProtosInArray} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
- * `src/v1/autokey_client_config.json`.
+ * `src/v1/hsm_management_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-import * as gapicConfig from './autokey_client_config.json';
+import * as gapicConfig from './hsm_management_client_config.json';
 const version = require('../../../package.json').version;
 
 /**
- *  Provides interfaces for using [Cloud KMS
- *  Autokey](https://cloud.google.com/kms/help/autokey) to provision new
- *  {@link protos.google.cloud.kms.v1.CryptoKey|CryptoKeys}, ready for Customer Managed
- *  Encryption Key (CMEK) use, on-demand. To support certain client tooling, this
- *  feature is modeled around a {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}
- *  resource: creating a {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} in a resource
- *  project and given location triggers Cloud KMS Autokey to provision a
- *  {@link protos.google.cloud.kms.v1.CryptoKey|CryptoKey} in the configured key project and
- *  the same location.
+ *  Google Cloud HSM Management Service
  *
- *  Prior to use in a given resource project,
- *  {@link protos.google.cloud.kms.v1.AutokeyAdmin.UpdateAutokeyConfig|UpdateAutokeyConfig}
- *  should have been called on an ancestor folder, setting the key project where
- *  Cloud KMS Autokey should create new
- *  {@link protos.google.cloud.kms.v1.CryptoKey|CryptoKeys}. See documentation for additional
- *  prerequisites. To check what key project, if any, is currently configured on
- *  a resource project's ancestor folder, see
- *  {@link protos.google.cloud.kms.v1.AutokeyAdmin.ShowEffectiveAutokeyConfig|ShowEffectiveAutokeyConfig}.
+ *  Provides interfaces for managing HSM instances.
+ *
+ *  Implements a REST model with the following objects:
+ *  * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}
+ *  * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
  * @class
  * @memberof v1
  */
-export class AutokeyClient {
+export class HsmManagementClient {
   private _terminated = false;
   private _opts: ClientOptions;
   private _providedCustomServicePath: boolean;
@@ -79,10 +68,10 @@ export class AutokeyClient {
   locationsClient: LocationsClient;
   pathTemplates: {[name: string]: gax.PathTemplate};
   operationsClient: gax.OperationsClient;
-  autokeyStub?: Promise<{[name: string]: Function}>;
+  hsmManagementStub?: Promise<{[name: string]: Function}>;
 
   /**
-   * Construct an instance of AutokeyClient.
+   * Construct an instance of HsmManagementClient.
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
@@ -117,12 +106,12 @@ export class AutokeyClient {
    *     HTTP implementation. Load only fallback version and pass it to the constructor:
    *     ```
    *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
-   *     const client = new AutokeyClient({fallback: true}, gax);
+   *     const client = new HsmManagementClient({fallback: true}, gax);
    *     ```
    */
   constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
-    const staticMembers = this.constructor as typeof AutokeyClient;
+    const staticMembers = this.constructor as typeof HsmManagementClient;
     if (opts?.universe_domain && opts?.universeDomain && opts?.universe_domain !== opts?.universeDomain) {
       throw new Error('Please set either universe_domain or universeDomain, but not both.');
     }
@@ -246,8 +235,10 @@ export class AutokeyClient {
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
     this.descriptors.page = {
-      listKeyHandles:
-          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'keyHandles')
+      listSingleTenantHsmInstances:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'singleTenantHsmInstances'),
+      listSingleTenantHsmInstanceProposals:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'singleTenantHsmInstanceProposals')
     };
 
     const protoFilesRoot = this._gaxModule.protobufFromJSON(jsonProtos);
@@ -266,21 +257,37 @@ export class AutokeyClient {
       },{selector: 'google.longrunning.Operations.GetOperation',get: '/v1/{name=projects/*/locations/*/operations/*}',}];
     }
     this.operationsClient = this._gaxModule.lro(lroOptions).operationsClient(opts);
-    const createKeyHandleResponse = protoFilesRoot.lookup(
-      '.google.cloud.kms.v1.KeyHandle') as gax.protobuf.Type;
-    const createKeyHandleMetadata = protoFilesRoot.lookup(
-      '.google.cloud.kms.v1.CreateKeyHandleMetadata') as gax.protobuf.Type;
+    const createSingleTenantHsmInstanceResponse = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.SingleTenantHsmInstance') as gax.protobuf.Type;
+    const createSingleTenantHsmInstanceMetadata = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.CreateSingleTenantHsmInstanceMetadata') as gax.protobuf.Type;
+    const createSingleTenantHsmInstanceProposalResponse = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.SingleTenantHsmInstanceProposal') as gax.protobuf.Type;
+    const createSingleTenantHsmInstanceProposalMetadata = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalMetadata') as gax.protobuf.Type;
+    const executeSingleTenantHsmInstanceProposalResponse = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalResponse') as gax.protobuf.Type;
+    const executeSingleTenantHsmInstanceProposalMetadata = protoFilesRoot.lookup(
+      '.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalMetadata') as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
-      createKeyHandle: new this._gaxModule.LongrunningDescriptor(
+      createSingleTenantHsmInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
-        createKeyHandleResponse.decode.bind(createKeyHandleResponse),
-        createKeyHandleMetadata.decode.bind(createKeyHandleMetadata))
+        createSingleTenantHsmInstanceResponse.decode.bind(createSingleTenantHsmInstanceResponse),
+        createSingleTenantHsmInstanceMetadata.decode.bind(createSingleTenantHsmInstanceMetadata)),
+      createSingleTenantHsmInstanceProposal: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        createSingleTenantHsmInstanceProposalResponse.decode.bind(createSingleTenantHsmInstanceProposalResponse),
+        createSingleTenantHsmInstanceProposalMetadata.decode.bind(createSingleTenantHsmInstanceProposalMetadata)),
+      executeSingleTenantHsmInstanceProposal: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        executeSingleTenantHsmInstanceProposalResponse.decode.bind(executeSingleTenantHsmInstanceProposalResponse),
+        executeSingleTenantHsmInstanceProposalMetadata.decode.bind(executeSingleTenantHsmInstanceProposalMetadata))
     };
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-        'google.cloud.kms.v1.Autokey', gapicConfig as gax.ClientConfig,
+        'google.cloud.kms.v1.HsmManagement', gapicConfig as gax.ClientConfig,
         opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -305,25 +312,25 @@ export class AutokeyClient {
    */
   initialize() {
     // If the client stub promise is already initialized, return immediately.
-    if (this.autokeyStub) {
-      return this.autokeyStub;
+    if (this.hsmManagementStub) {
+      return this.hsmManagementStub;
     }
 
     // Put together the "service stub" for
-    // google.cloud.kms.v1.Autokey.
-    this.autokeyStub = this._gaxGrpc.createStub(
+    // google.cloud.kms.v1.HsmManagement.
+    this.hsmManagementStub = this._gaxGrpc.createStub(
         this._opts.fallback ?
-          (this._protos as protobuf.Root).lookupService('google.cloud.kms.v1.Autokey') :
+          (this._protos as protobuf.Root).lookupService('google.cloud.kms.v1.HsmManagement') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this._protos as any).google.cloud.kms.v1.Autokey,
+          (this._protos as any).google.cloud.kms.v1.HsmManagement,
         this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const autokeyStubMethods =
-        ['createKeyHandle', 'getKeyHandle', 'listKeyHandles'];
-    for (const methodName of autokeyStubMethods) {
-      const callPromise = this.autokeyStub.then(
+    const hsmManagementStubMethods =
+        ['listSingleTenantHsmInstances', 'getSingleTenantHsmInstance', 'createSingleTenantHsmInstance', 'createSingleTenantHsmInstanceProposal', 'approveSingleTenantHsmInstanceProposal', 'executeSingleTenantHsmInstanceProposal', 'getSingleTenantHsmInstanceProposal', 'listSingleTenantHsmInstanceProposals', 'deleteSingleTenantHsmInstanceProposal'];
+    for (const methodName of hsmManagementStubMethods) {
+      const callPromise = this.hsmManagementStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
@@ -349,7 +356,7 @@ export class AutokeyClient {
       this.innerApiCalls[methodName] = apiCall;
     }
 
-    return this.autokeyStub;
+    return this.hsmManagementStub;
   }
 
   /**
@@ -427,56 +434,57 @@ export class AutokeyClient {
   // -- Service calls --
   // -------------------
 /**
- * Returns the {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}.
+ * Returns metadata for a given
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}.
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
- *   Required. Name of the {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} resource,
- *   e.g.
- *   `projects/{PROJECT_ID}/locations/{LOCATION}/keyHandles/{KEY_HANDLE_ID}`.
+ *   Required. The {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance.name|name} of
+ *   the {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}
+ *   to get.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}.
+ *   The first element of the array is an object representing {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/autokey.get_key_handle.js</caption>
- * region_tag:cloudkms_v1_generated_Autokey_GetKeyHandle_async
+ * @example <caption>include:samples/generated/v1/hsm_management.get_single_tenant_hsm_instance.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_GetSingleTenantHsmInstance_async
  */
-  getKeyHandle(
-      request?: protos.google.cloud.kms.v1.IGetKeyHandleRequest,
+  getSingleTenantHsmInstance(
+      request?: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.cloud.kms.v1.IKeyHandle,
-        protos.google.cloud.kms.v1.IGetKeyHandleRequest|undefined, {}|undefined
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|undefined, {}|undefined
       ]>;
-  getKeyHandle(
-      request: protos.google.cloud.kms.v1.IGetKeyHandleRequest,
+  getSingleTenantHsmInstance(
+      request: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest,
       options: CallOptions,
       callback: Callback<
-          protos.google.cloud.kms.v1.IKeyHandle,
-          protos.google.cloud.kms.v1.IGetKeyHandleRequest|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|null|undefined,
           {}|null|undefined>): void;
-  getKeyHandle(
-      request: protos.google.cloud.kms.v1.IGetKeyHandleRequest,
+  getSingleTenantHsmInstance(
+      request: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest,
       callback: Callback<
-          protos.google.cloud.kms.v1.IKeyHandle,
-          protos.google.cloud.kms.v1.IGetKeyHandleRequest|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|null|undefined,
           {}|null|undefined>): void;
-  getKeyHandle(
-      request?: protos.google.cloud.kms.v1.IGetKeyHandleRequest,
+  getSingleTenantHsmInstance(
+      request?: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.google.cloud.kms.v1.IKeyHandle,
-          protos.google.cloud.kms.v1.IGetKeyHandleRequest|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.google.cloud.kms.v1.IKeyHandle,
-          protos.google.cloud.kms.v1.IGetKeyHandleRequest|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.google.cloud.kms.v1.IKeyHandle,
-        protos.google.cloud.kms.v1.IGetKeyHandleRequest|undefined, {}|undefined
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -496,23 +504,330 @@ export class AutokeyClient {
       'name': request.name ?? '',
     });
     this.initialize().catch(err => {throw err});
-    this._log.info('getKeyHandle request %j', request);
+    this._log.info('getSingleTenantHsmInstance request %j', request);
     const wrappedCallback: Callback<
-        protos.google.cloud.kms.v1.IKeyHandle,
-        protos.google.cloud.kms.v1.IGetKeyHandleRequest|null|undefined,
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|null|undefined,
         {}|null|undefined>|undefined = callback
       ? (error, response, options, rawResponse) => {
-          this._log.info('getKeyHandle response %j', response);
+          this._log.info('getSingleTenantHsmInstance response %j', response);
           callback!(error, response, options, rawResponse); // We verified callback above.
         }
       : undefined;
-    return this.innerApiCalls.getKeyHandle(request, options, wrappedCallback)
+    return this.innerApiCalls.getSingleTenantHsmInstance(request, options, wrappedCallback)
       ?.then(([response, options, rawResponse]: [
-        protos.google.cloud.kms.v1.IKeyHandle,
-        protos.google.cloud.kms.v1.IGetKeyHandleRequest|undefined,
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceRequest|undefined,
         {}|undefined
       ]) => {
-        this._log.info('getKeyHandle response %j', response);
+        this._log.info('getSingleTenantHsmInstance response %j', response);
+        return [response, options, rawResponse];
+      }).catch((error: any) => {
+        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
+          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
+          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
+        }
+        throw error;
+      });
+  }
+/**
+ * Approves a
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ * for a given
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}. The
+ * proposal must be in the
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.State.PENDING|PENDING}
+ * state.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required. The
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.name|name} of the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ *   to approve.
+ * @param {google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest.QuorumReply} request.quorumReply
+ *   Required. The reply to
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.QuorumParameters|QuorumParameters}
+ *   for approving the proposal.
+ * @param {google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalRequest.RequiredActionQuorumReply} request.requiredActionQuorumReply
+ *   Required. The reply to
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.RequiredActionQuorumParameters|RequiredActionQuorumParameters}
+ *   for approving the proposal.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.cloud.kms.v1.ApproveSingleTenantHsmInstanceProposalResponse|ApproveSingleTenantHsmInstanceProposalResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.approve_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_ApproveSingleTenantHsmInstanceProposal_async
+ */
+  approveSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>;
+  approveSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  approveSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest,
+      callback: Callback<
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  approveSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+          protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    this._log.info('approveSingleTenantHsmInstanceProposal request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('approveSingleTenantHsmInstanceProposal response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.approveSingleTenantHsmInstanceProposal(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalResponse,
+        protos.google.cloud.kms.v1.IApproveSingleTenantHsmInstanceProposalRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('approveSingleTenantHsmInstanceProposal response %j', response);
+        return [response, options, rawResponse];
+      }).catch((error: any) => {
+        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
+          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
+          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
+        }
+        throw error;
+      });
+  }
+/**
+ * Returns metadata for a given
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required. The
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.name|name} of the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ *   to get.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.get_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_GetSingleTenantHsmInstanceProposal_async
+ */
+  getSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>;
+  getSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  getSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest,
+      callback: Callback<
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  getSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+          protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    this._log.info('getSingleTenantHsmInstanceProposal request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getSingleTenantHsmInstanceProposal response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.getSingleTenantHsmInstanceProposal(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal,
+        protos.google.cloud.kms.v1.IGetSingleTenantHsmInstanceProposalRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('getSingleTenantHsmInstanceProposal response %j', response);
+        return [response, options, rawResponse];
+      }).catch((error: any) => {
+        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
+          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
+          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
+        }
+        throw error;
+      });
+  }
+/**
+ * Deletes a
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required. The
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.name|name} of the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ *   to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.delete_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_DeleteSingleTenantHsmInstanceProposal_async
+ */
+  deleteSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.protobuf.IEmpty,
+        protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>;
+  deleteSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  deleteSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest,
+      callback: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>): void;
+  deleteSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.protobuf.IEmpty,
+        protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    this._log.info('deleteSingleTenantHsmInstanceProposal request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.protobuf.IEmpty,
+        protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteSingleTenantHsmInstanceProposal response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.deleteSingleTenantHsmInstanceProposal(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.protobuf.IEmpty,
+        protos.google.cloud.kms.v1.IDeleteSingleTenantHsmInstanceProposalRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('deleteSingleTenantHsmInstanceProposal response %j', response);
         return [response, options, rawResponse];
       }).catch((error: any) => {
         if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
@@ -524,26 +839,25 @@ export class AutokeyClient {
   }
 
 /**
- * Creates a new {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}, triggering the
- * provisioning of a new {@link protos.google.cloud.kms.v1.CryptoKey|CryptoKey} for CMEK
- * use with the given resource type in the configured key project and the same
- * location. {@link protos.google.longrunning.Operations.GetOperation|GetOperation} should
- * be used to resolve the resulting long-running operation and get the
- * resulting {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} and
- * {@link protos.google.cloud.kms.v1.CryptoKey|CryptoKey}.
+ * Creates a new
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance} in a
+ * given Project and Location. User must create a RegisterTwoFactorAuthKeys
+ * proposal with this single-tenant HSM instance to finish setup of the
+ * instance.
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.parent
- *   Required. Name of the resource project and location to create the
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} in, e.g.
- *   `projects/{PROJECT_ID}/locations/{LOCATION}`.
- * @param {string} [request.keyHandleId]
- *   Optional. Id of the {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}. Must be
- *   unique to the resource project and location. If not provided by the caller,
- *   a new UUID is used.
- * @param {google.cloud.kms.v1.KeyHandle} request.keyHandle
- *   Required. {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} to create.
+ *   Required. The resource name of the location associated with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}, in
+ *   the format `projects/* /locations/*`.
+ * @param {string} [request.singleTenantHsmInstanceId]
+ *   Optional. It must be unique within a location and match the regular
+ *   expression `[a-zA-Z0-9_-]{1,63}`.
+ * @param {google.cloud.kms.v1.SingleTenantHsmInstance} request.singleTenantHsmInstance
+ *   Required. An
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance} with
+ *   initial field values.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -552,41 +866,41 @@ export class AutokeyClient {
  *   you can `await` for.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/autokey.create_key_handle.js</caption>
- * region_tag:cloudkms_v1_generated_Autokey_CreateKeyHandle_async
+ * @example <caption>include:samples/generated/v1/hsm_management.create_single_tenant_hsm_instance.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_CreateSingleTenantHsmInstance_async
  */
-  createKeyHandle(
-      request?: protos.google.cloud.kms.v1.ICreateKeyHandleRequest,
+  createSingleTenantHsmInstance(
+      request?: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceRequest,
       options?: CallOptions):
       Promise<[
-        LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+        LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
         protos.google.longrunning.IOperation|undefined, {}|undefined
       ]>;
-  createKeyHandle(
-      request: protos.google.cloud.kms.v1.ICreateKeyHandleRequest,
+  createSingleTenantHsmInstance(
+      request: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceRequest,
       options: CallOptions,
       callback: Callback<
-          LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-  createKeyHandle(
-      request: protos.google.cloud.kms.v1.ICreateKeyHandleRequest,
+  createSingleTenantHsmInstance(
+      request: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceRequest,
       callback: Callback<
-          LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-  createKeyHandle(
-      request?: protos.google.cloud.kms.v1.ICreateKeyHandleRequest,
+  createSingleTenantHsmInstance(
+      request?: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceRequest,
       optionsOrCallback?: CallOptions|Callback<
-          LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>):
       Promise<[
-        LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+        LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
         protos.google.longrunning.IOperation|undefined, {}|undefined
       ]>|void {
     request = request || {};
@@ -608,114 +922,364 @@ export class AutokeyClient {
     });
     this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
-          LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>|undefined = callback
       ? (error, response, rawResponse, _) => {
-          this._log.info('createKeyHandle response %j', rawResponse);
+          this._log.info('createSingleTenantHsmInstance response %j', rawResponse);
           callback!(error, response, rawResponse, _); // We verified callback above.
         }
       : undefined;
-    this._log.info('createKeyHandle request %j', request);
-    return this.innerApiCalls.createKeyHandle(request, options, wrappedCallback)
+    this._log.info('createSingleTenantHsmInstance request %j', request);
+    return this.innerApiCalls.createSingleTenantHsmInstance(request, options, wrappedCallback)
     ?.then(([response, rawResponse, _]: [
-      LROperation<protos.google.cloud.kms.v1.IKeyHandle, protos.google.cloud.kms.v1.ICreateKeyHandleMetadata>,
+      LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstance, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceMetadata>,
       protos.google.longrunning.IOperation|undefined, {}|undefined
     ]) => {
-      this._log.info('createKeyHandle response %j', rawResponse);
+      this._log.info('createSingleTenantHsmInstance response %j', rawResponse);
       return [response, rawResponse, _];
     });
   }
 /**
- * Check the status of the long running operation returned by `createKeyHandle()`.
+ * Check the status of the long running operation returned by `createSingleTenantHsmInstance()`.
  * @param {String} name
  *   The operation name that will be passed.
  * @returns {Promise} - The promise which resolves to an object.
  *   The decoded operation object has result and metadata field to get information from.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/autokey.create_key_handle.js</caption>
- * region_tag:cloudkms_v1_generated_Autokey_CreateKeyHandle_async
+ * @example <caption>include:samples/generated/v1/hsm_management.create_single_tenant_hsm_instance.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_CreateSingleTenantHsmInstance_async
  */
-  async checkCreateKeyHandleProgress(name: string): Promise<LROperation<protos.google.cloud.kms.v1.KeyHandle, protos.google.cloud.kms.v1.CreateKeyHandleMetadata>>{
-    this._log.info('createKeyHandle long-running');
+  async checkCreateSingleTenantHsmInstanceProgress(name: string): Promise<LROperation<protos.google.cloud.kms.v1.SingleTenantHsmInstance, protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceMetadata>>{
+    this._log.info('createSingleTenantHsmInstance long-running');
     const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.createKeyHandle, this._gaxModule.createDefaultBackoffSettings());
-    return decodeOperation as LROperation<protos.google.cloud.kms.v1.KeyHandle, protos.google.cloud.kms.v1.CreateKeyHandleMetadata>;
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.createSingleTenantHsmInstance, this._gaxModule.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.google.cloud.kms.v1.SingleTenantHsmInstance, protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceMetadata>;
   }
- /**
- * Lists {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}.
+/**
+ * Creates a new
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ * for a given
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}.
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.parent
- *   Required. Name of the resource project and location from which to list
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `projects/{PROJECT_ID}/locations/{LOCATION}`.
- * @param {number} [request.pageSize]
- *   Optional. Optional limit on the number of
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} to include in the response. The
- *   service may return fewer than this value. Further
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} can subsequently be obtained by
- *   including the
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}
- *   in a subsequent request.  If unspecified, at most 100
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} will be returned.
- * @param {string} [request.pageToken]
- *   Optional. Optional pagination token, returned earlier via
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}.
- * @param {string} [request.filter]
- *   Optional. Filter to apply when listing
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `resource_type_selector="{SERVICE}.googleapis.com/{TYPE}"`.
+ *   Required. The {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance.name|name} of
+ *   the {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}
+ *   associated with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}.
+ * @param {string} [request.singleTenantHsmInstanceProposalId]
+ *   Optional. It must be unique within a location and match the regular
+ *   expression `[a-zA-Z0-9_-]{1,63}`.
+ * @param {google.cloud.kms.v1.SingleTenantHsmInstanceProposal} request.singleTenantHsmInstanceProposal
+ *   Required. The
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ *   to create.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is Array of {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.create_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_CreateSingleTenantHsmInstanceProposal_async
+ */
+  createSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  createSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  createSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalRequest,
+      callback: Callback<
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  createSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    const wrappedCallback: Callback<
+          LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>|undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createSingleTenantHsmInstanceProposal response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createSingleTenantHsmInstanceProposal request %j', request);
+    return this.innerApiCalls.createSingleTenantHsmInstanceProposal(request, options, wrappedCallback)
+    ?.then(([response, rawResponse, _]: [
+      LROperation<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.ICreateSingleTenantHsmInstanceProposalMetadata>,
+      protos.google.longrunning.IOperation|undefined, {}|undefined
+    ]) => {
+      this._log.info('createSingleTenantHsmInstanceProposal response %j', rawResponse);
+      return [response, rawResponse, _];
+    });
+  }
+/**
+ * Check the status of the long running operation returned by `createSingleTenantHsmInstanceProposal()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.create_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_CreateSingleTenantHsmInstanceProposal_async
+ */
+  async checkCreateSingleTenantHsmInstanceProposalProgress(name: string): Promise<LROperation<protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalMetadata>>{
+    this._log.info('createSingleTenantHsmInstanceProposal long-running');
+    const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.createSingleTenantHsmInstanceProposal, this._gaxModule.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal, protos.google.cloud.kms.v1.CreateSingleTenantHsmInstanceProposalMetadata>;
+  }
+/**
+ * Executes a
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ * for a given
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}. The
+ * proposal must be in the
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.State.APPROVED|APPROVED}
+ * state.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required. The
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal.name|name} of the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}
+ *   to execute.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.execute_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_ExecuteSingleTenantHsmInstanceProposal_async
+ */
+  executeSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  executeSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  executeSingleTenantHsmInstanceProposal(
+      request: protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalRequest,
+      callback: Callback<
+          LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  executeSingleTenantHsmInstanceProposal(
+      request?: protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    const wrappedCallback: Callback<
+          LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>|undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('executeSingleTenantHsmInstanceProposal response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('executeSingleTenantHsmInstanceProposal request %j', request);
+    return this.innerApiCalls.executeSingleTenantHsmInstanceProposal(request, options, wrappedCallback)
+    ?.then(([response, rawResponse, _]: [
+      LROperation<protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.IExecuteSingleTenantHsmInstanceProposalMetadata>,
+      protos.google.longrunning.IOperation|undefined, {}|undefined
+    ]) => {
+      this._log.info('executeSingleTenantHsmInstanceProposal response %j', rawResponse);
+      return [response, rawResponse, _];
+    });
+  }
+/**
+ * Check the status of the long running operation returned by `executeSingleTenantHsmInstanceProposal()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.execute_single_tenant_hsm_instance_proposal.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_ExecuteSingleTenantHsmInstanceProposal_async
+ */
+  async checkExecuteSingleTenantHsmInstanceProposalProgress(name: string): Promise<LROperation<protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalMetadata>>{
+    this._log.info('executeSingleTenantHsmInstanceProposal long-running');
+    const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.executeSingleTenantHsmInstanceProposal, this._gaxModule.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalResponse, protos.google.cloud.kms.v1.ExecuteSingleTenantHsmInstanceProposalMetadata>;
+  }
+ /**
+ * Lists
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances}.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The resource name of the location associated with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   list, in the format `projects/* /locations/*`.
+ * @param {number} [request.pageSize]
+ *   Optional. Optional limit on the number of
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} can
+ *   subsequently be
+ *   obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
+ * @param {string} [request.pageToken]
+ *   Optional. Optional pagination token, returned earlier via
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}.
+ * @param {string} [request.filter]
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstances|HsmManagement.ListSingleTenantHsmInstances}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} in
+ *   DELETED state.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is Array of {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}.
  *   The client library will perform auto-pagination by default: it will call the API as many
  *   times as needed and will merge results from all the pages into this array.
  *   Note that it can affect your quota.
- *   We recommend using `listKeyHandlesAsync()`
+ *   We recommend using `listSingleTenantHsmInstancesAsync()`
  *   method described below for async iteration which you can stop as needed.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
  *   for more details and examples.
  */
-  listKeyHandles(
-      request?: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+  listSingleTenantHsmInstances(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.cloud.kms.v1.IKeyHandle[],
-        protos.google.cloud.kms.v1.IListKeyHandlesRequest|null,
-        protos.google.cloud.kms.v1.IListKeyHandlesResponse
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse
       ]>;
-  listKeyHandles(
-      request: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+  listSingleTenantHsmInstances(
+      request: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       options: CallOptions,
       callback: PaginationCallback<
-          protos.google.cloud.kms.v1.IListKeyHandlesRequest,
-          protos.google.cloud.kms.v1.IListKeyHandlesResponse|null|undefined,
-          protos.google.cloud.kms.v1.IKeyHandle>): void;
-  listKeyHandles(
-      request: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance>): void;
+  listSingleTenantHsmInstances(
+      request: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       callback: PaginationCallback<
-          protos.google.cloud.kms.v1.IListKeyHandlesRequest,
-          protos.google.cloud.kms.v1.IListKeyHandlesResponse|null|undefined,
-          protos.google.cloud.kms.v1.IKeyHandle>): void;
-  listKeyHandles(
-      request?: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance>): void;
+  listSingleTenantHsmInstances(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
-          protos.google.cloud.kms.v1.IListKeyHandlesRequest,
-          protos.google.cloud.kms.v1.IListKeyHandlesResponse|null|undefined,
-          protos.google.cloud.kms.v1.IKeyHandle>,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance>,
       callback?: PaginationCallback<
-          protos.google.cloud.kms.v1.IListKeyHandlesRequest,
-          protos.google.cloud.kms.v1.IListKeyHandlesResponse|null|undefined,
-          protos.google.cloud.kms.v1.IKeyHandle>):
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstance>):
       Promise<[
-        protos.google.cloud.kms.v1.IKeyHandle[],
-        protos.google.cloud.kms.v1.IListKeyHandlesRequest|null,
-        protos.google.cloud.kms.v1.IListKeyHandlesResponse
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -736,64 +1300,77 @@ export class AutokeyClient {
     });
     this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
-      protos.google.cloud.kms.v1.IListKeyHandlesRequest,
-      protos.google.cloud.kms.v1.IListKeyHandlesResponse|null|undefined,
-      protos.google.cloud.kms.v1.IKeyHandle>|undefined = callback
+      protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
+      protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse|null|undefined,
+      protos.google.cloud.kms.v1.ISingleTenantHsmInstance>|undefined = callback
       ? (error, values, nextPageRequest, rawResponse) => {
-          this._log.info('listKeyHandles values %j', values);
+          this._log.info('listSingleTenantHsmInstances values %j', values);
           callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
         }
       : undefined;
-    this._log.info('listKeyHandles request %j', request);
+    this._log.info('listSingleTenantHsmInstances request %j', request);
     return this.innerApiCalls
-      .listKeyHandles(request, options, wrappedCallback)
+      .listSingleTenantHsmInstances(request, options, wrappedCallback)
       ?.then(([response, input, output]: [
-        protos.google.cloud.kms.v1.IKeyHandle[],
-        protos.google.cloud.kms.v1.IListKeyHandlesRequest|null,
-        protos.google.cloud.kms.v1.IListKeyHandlesResponse
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstance[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesResponse
       ]) => {
-        this._log.info('listKeyHandles values %j', response);
+        this._log.info('listSingleTenantHsmInstances values %j', response);
         return [response, input, output];
       });
   }
 
 /**
- * Equivalent to `listKeyHandles`, but returns a NodeJS Stream object.
+ * Equivalent to `listSingleTenantHsmInstances`, but returns a NodeJS Stream object.
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.parent
- *   Required. Name of the resource project and location from which to list
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `projects/{PROJECT_ID}/locations/{LOCATION}`.
+ *   Required. The resource name of the location associated with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   list, in the format `projects/* /locations/*`.
  * @param {number} [request.pageSize]
  *   Optional. Optional limit on the number of
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} to include in the response. The
- *   service may return fewer than this value. Further
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} can subsequently be obtained by
- *   including the
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}
- *   in a subsequent request.  If unspecified, at most 100
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} will be returned.
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} can
+ *   subsequently be
+ *   obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
  * @param {string} [request.pageToken]
  *   Optional. Optional pagination token, returned earlier via
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}.
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}.
  * @param {string} [request.filter]
- *   Optional. Filter to apply when listing
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `resource_type_selector="{SERVICE}.googleapis.com/{TYPE}"`.
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstances|HsmManagement.ListSingleTenantHsmInstances}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} in
+ *   DELETED state.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Stream}
- *   An object stream which emits an object representing {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle} on 'data' event.
+ *   An object stream which emits an object representing {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance} on 'data' event.
  *   The client library will perform auto-pagination by default: it will call the API as many
  *   times as needed. Note that it can affect your quota.
- *   We recommend using `listKeyHandlesAsync()`
+ *   We recommend using `listSingleTenantHsmInstancesAsync()`
  *   method described below for async iteration which you can stop as needed.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
  *   for more details and examples.
  */
-  listKeyHandlesStream(
-      request?: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+  listSingleTenantHsmInstancesStream(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       options?: CallOptions):
     Transform{
     request = request || {};
@@ -805,59 +1382,72 @@ export class AutokeyClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    const defaultCallSettings = this._defaults['listKeyHandles'];
+    const defaultCallSettings = this._defaults['listSingleTenantHsmInstances'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize().catch(err => {throw err});
-    this._log.info('listKeyHandles stream %j', request);
-    return this.descriptors.page.listKeyHandles.createStream(
-      this.innerApiCalls.listKeyHandles as GaxCall,
+    this._log.info('listSingleTenantHsmInstances stream %j', request);
+    return this.descriptors.page.listSingleTenantHsmInstances.createStream(
+      this.innerApiCalls.listSingleTenantHsmInstances as GaxCall,
       request,
       callSettings
     );
   }
 
 /**
- * Equivalent to `listKeyHandles`, but returns an iterable object.
+ * Equivalent to `listSingleTenantHsmInstances`, but returns an iterable object.
  *
  * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.parent
- *   Required. Name of the resource project and location from which to list
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `projects/{PROJECT_ID}/locations/{LOCATION}`.
+ *   Required. The resource name of the location associated with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   list, in the format `projects/* /locations/*`.
  * @param {number} [request.pageSize]
  *   Optional. Optional limit on the number of
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} to include in the response. The
- *   service may return fewer than this value. Further
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} can subsequently be obtained by
- *   including the
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}
- *   in a subsequent request.  If unspecified, at most 100
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles} will be returned.
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} to
+ *   include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} can
+ *   subsequently be
+ *   obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
  * @param {string} [request.pageToken]
  *   Optional. Optional pagination token, returned earlier via
- *   {@link protos.google.cloud.kms.v1.ListKeyHandlesResponse.next_page_token|ListKeyHandlesResponse.next_page_token}.
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstancesResponse.next_page_token|ListSingleTenantHsmInstancesResponse.next_page_token}.
  * @param {string} [request.filter]
- *   Optional. Filter to apply when listing
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandles}, e.g.
- *   `resource_type_selector="{SERVICE}.googleapis.com/{TYPE}"`.
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstances|HsmManagement.ListSingleTenantHsmInstances}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstances} in
+ *   DELETED state.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Object}
  *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
  *   When you iterate the returned iterable, each element will be an object representing
- *   {@link protos.google.cloud.kms.v1.KeyHandle|KeyHandle}. The API will be called under the hood as needed, once per the page,
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstance|SingleTenantHsmInstance}. The API will be called under the hood as needed, once per the page,
  *   so you can stop the iteration when you don't need more results.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/autokey.list_key_handles.js</caption>
- * region_tag:cloudkms_v1_generated_Autokey_ListKeyHandles_async
+ * @example <caption>include:samples/generated/v1/hsm_management.list_single_tenant_hsm_instances.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_ListSingleTenantHsmInstances_async
  */
-  listKeyHandlesAsync(
-      request?: protos.google.cloud.kms.v1.IListKeyHandlesRequest,
+  listSingleTenantHsmInstancesAsync(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstancesRequest,
       options?: CallOptions):
-    AsyncIterable<protos.google.cloud.kms.v1.IKeyHandle>{
+    AsyncIterable<protos.google.cloud.kms.v1.ISingleTenantHsmInstance>{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -867,15 +1457,288 @@ export class AutokeyClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    const defaultCallSettings = this._defaults['listKeyHandles'];
+    const defaultCallSettings = this._defaults['listSingleTenantHsmInstances'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize().catch(err => {throw err});
-    this._log.info('listKeyHandles iterate %j', request);
-    return this.descriptors.page.listKeyHandles.asyncIterate(
-      this.innerApiCalls['listKeyHandles'] as GaxCall,
+    this._log.info('listSingleTenantHsmInstances iterate %j', request);
+    return this.descriptors.page.listSingleTenantHsmInstances.asyncIterate(
+      this.innerApiCalls['listSingleTenantHsmInstances'] as GaxCall,
       request as {},
       callSettings
-    ) as AsyncIterable<protos.google.cloud.kms.v1.IKeyHandle>;
+    ) as AsyncIterable<protos.google.cloud.kms.v1.ISingleTenantHsmInstance>;
+  }
+ /**
+ * Lists
+ * {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The resource name of the single tenant HSM instance associated
+ *   with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to list, in the format `projects/* /locations/* /singleTenantHsmInstances/*`.
+ * @param {number} [request.pageSize]
+ *   Optional. Optional limit on the number of
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   can subsequently be obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
+ * @param {string} [request.pageToken]
+ *   Optional. Optional pagination token, returned earlier via
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}.
+ * @param {string} [request.filter]
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstanceProposals|HsmManagement.ListSingleTenantHsmInstanceProposals}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   in DELETED state.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is Array of {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed and will merge results from all the pages into this array.
+ *   Note that it can affect your quota.
+ *   We recommend using `listSingleTenantHsmInstanceProposalsAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
+  listSingleTenantHsmInstanceProposals(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse
+      ]>;
+  listSingleTenantHsmInstanceProposals(
+      request: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>): void;
+  listSingleTenantHsmInstanceProposals(
+      request: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      callback: PaginationCallback<
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>): void;
+  listSingleTenantHsmInstanceProposals(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      optionsOrCallback?: CallOptions|PaginationCallback<
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>,
+      callback?: PaginationCallback<
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+          protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse|null|undefined,
+          protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>):
+      Promise<[
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    const wrappedCallback: PaginationCallback<
+      protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse|null|undefined,
+      protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>|undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listSingleTenantHsmInstanceProposals values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listSingleTenantHsmInstanceProposals request %j', request);
+    return this.innerApiCalls
+      .listSingleTenantHsmInstanceProposals(request, options, wrappedCallback)
+      ?.then(([response, input, output]: [
+        protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal[],
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest|null,
+        protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsResponse
+      ]) => {
+        this._log.info('listSingleTenantHsmInstanceProposals values %j', response);
+        return [response, input, output];
+      });
+  }
+
+/**
+ * Equivalent to `listSingleTenantHsmInstanceProposals`, but returns a NodeJS Stream object.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The resource name of the single tenant HSM instance associated
+ *   with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to list, in the format `projects/* /locations/* /singleTenantHsmInstances/*`.
+ * @param {number} [request.pageSize]
+ *   Optional. Optional limit on the number of
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   can subsequently be obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
+ * @param {string} [request.pageToken]
+ *   Optional. Optional pagination token, returned earlier via
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}.
+ * @param {string} [request.filter]
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstanceProposals|HsmManagement.ListSingleTenantHsmInstanceProposals}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   in DELETED state.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits an object representing {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal} on 'data' event.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed. Note that it can affect your quota.
+ *   We recommend using `listSingleTenantHsmInstanceProposalsAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
+  listSingleTenantHsmInstanceProposalsStream(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      options?: CallOptions):
+    Transform{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    const defaultCallSettings = this._defaults['listSingleTenantHsmInstanceProposals'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize().catch(err => {throw err});
+    this._log.info('listSingleTenantHsmInstanceProposals stream %j', request);
+    return this.descriptors.page.listSingleTenantHsmInstanceProposals.createStream(
+      this.innerApiCalls.listSingleTenantHsmInstanceProposals as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+/**
+ * Equivalent to `listSingleTenantHsmInstanceProposals`, but returns an iterable object.
+ *
+ * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The resource name of the single tenant HSM instance associated
+ *   with the
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to list, in the format `projects/* /locations/* /singleTenantHsmInstances/*`.
+ * @param {number} [request.pageSize]
+ *   Optional. Optional limit on the number of
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   to include in the response. Further
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   can subsequently be obtained by including the
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}
+ *   in a subsequent request. If unspecified, the server will pick an
+ *   appropriate default.
+ * @param {string} [request.pageToken]
+ *   Optional. Optional pagination token, returned earlier via
+ *   {@link protos.google.cloud.kms.v1.ListSingleTenantHsmInstanceProposalsResponse.next_page_token|ListSingleTenantHsmInstanceProposalsResponse.next_page_token}.
+ * @param {string} [request.filter]
+ *   Optional. Only include resources that match the filter in the response. For
+ *   more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {string} [request.orderBy]
+ *   Optional. Specify how the results should be sorted. If not specified, the
+ *   results will be sorted in the default order.  For more information, see
+ *   [Sorting and filtering list
+ *   results](https://cloud.google.com/kms/docs/sorting-and-filtering).
+ * @param {boolean} [request.showDeleted]
+ *   Optional. If set to true,
+ *   {@link protos.google.cloud.kms.v1.HsmManagement.ListSingleTenantHsmInstanceProposals|HsmManagement.ListSingleTenantHsmInstanceProposals}
+ *   will also return
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposals}
+ *   in DELETED state.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Object}
+ *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+ *   When you iterate the returned iterable, each element will be an object representing
+ *   {@link protos.google.cloud.kms.v1.SingleTenantHsmInstanceProposal|SingleTenantHsmInstanceProposal}. The API will be called under the hood as needed, once per the page,
+ *   so you can stop the iteration when you don't need more results.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/hsm_management.list_single_tenant_hsm_instance_proposals.js</caption>
+ * region_tag:cloudkms_v1_generated_HsmManagement_ListSingleTenantHsmInstanceProposals_async
+ */
+  listSingleTenantHsmInstanceProposalsAsync(
+      request?: protos.google.cloud.kms.v1.IListSingleTenantHsmInstanceProposalsRequest,
+      options?: CallOptions):
+    AsyncIterable<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    const defaultCallSettings = this._defaults['listSingleTenantHsmInstanceProposals'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize().catch(err => {throw err});
+    this._log.info('listSingleTenantHsmInstanceProposals iterate %j', request);
+    return this.descriptors.page.listSingleTenantHsmInstanceProposals.asyncIterate(
+      this.innerApiCalls['listSingleTenantHsmInstanceProposals'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.cloud.kms.v1.ISingleTenantHsmInstanceProposal>;
   }
 /**
  * Gets the access control policy for a resource. Returns an empty policy
@@ -1955,8 +2818,8 @@ export class AutokeyClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    if (this.autokeyStub && !this._terminated) {
-      return this.autokeyStub.then(stub => {
+    if (this.hsmManagementStub && !this._terminated) {
+      return this.hsmManagementStub.then(stub => {
         this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
