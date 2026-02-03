@@ -6,7 +6,7 @@
   "issue_tracker": "https://issuetracker.google.com/savedsearches/559654",
   "release_level": "stable",
   "language": "nodejs",
-  "repo": "googleapis/nodejs-bigquery",
+  "repo": "googleapis/google-cloud-node",
   "distribution_name": "@google-cloud/bigquery",
   "api_id": "bigquery.googleapis.com",
   "requires_billing": false,
