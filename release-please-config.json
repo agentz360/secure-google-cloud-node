@@ -4,6 +4,7 @@
   "packages": {
     "handwritten/bigquery": {},
     "handwritten/cloud-profiler": {},
+    "handwritten/logging-bunyan": {},
     "packages/gapic-node-processing": {},
     "packages/google-ads-admanager": {},
     "packages/google-ads-datamanager": {},
