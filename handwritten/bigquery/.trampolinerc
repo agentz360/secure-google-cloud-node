@@ -22,6 +22,8 @@ required_envvars+=(
 pass_down_envvars+=(
     "AUTORELEASE_PR"
     "VERSION"
+    "SECRET_MANAGER_KEYS"
+    "TRAMPOLINE_BUILD_FILE"
 )
 
 # Prevent unintentional override on the default image.
