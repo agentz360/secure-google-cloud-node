@@ -21,7 +21,7 @@
 'use strict';
 
 function main(name) {
-  // [START cloudkms_v1_generated_AutokeyAdmin_GetAutokeyConfig_async]
+  // [START cloudkms_v1_generated_KeyManagementService_GetRetiredResource_async]
   /**
    * This snippet has been automatically generated and should be regarded as a code template only.
    * It will require modifications to work.
@@ -29,31 +29,30 @@ function main(name) {
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  Required. Name of the AutokeyConfig google.cloud.kms.v1.AutokeyConfig 
-   *  resource, e.g. `folders/{FOLDER_NUMBER}/autokeyConfig` or
-   *  `projects/{PROJECT_NUMBER}/autokeyConfig`.
+   *  Required. The name google.cloud.kms.v1.RetiredResource.name  of the
+   *  RetiredResource google.cloud.kms.v1.RetiredResource  to get.
    */
   // const name = 'abc123'
 
   // Imports the Kms library
-  const {AutokeyAdminClient} = require('@google-cloud/kms').v1;
+  const {KeyManagementServiceClient} = require('@google-cloud/kms').v1;
 
   // Instantiates a client
-  const kmsClient = new AutokeyAdminClient();
+  const kmsClient = new KeyManagementServiceClient();
 
-  async function callGetAutokeyConfig() {
+  async function callGetRetiredResource() {
     // Construct request
     const request = {
       name,
     };
 
     // Run request
-    const response = await kmsClient.getAutokeyConfig(request);
+    const response = await kmsClient.getRetiredResource(request);
     console.log(response);
   }
 
-  callGetAutokeyConfig();
-  // [END cloudkms_v1_generated_AutokeyAdmin_GetAutokeyConfig_async]
+  callGetRetiredResource();
+  // [END cloudkms_v1_generated_KeyManagementService_GetRetiredResource_async]
 }
 
 process.on('unhandledRejection', err => {
