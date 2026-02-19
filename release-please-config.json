@@ -223,7 +223,7 @@
     "packages/google-storagetransfer": {},
     "packages/google-streetview-publish": {},
     "packages/grafeas": {},
-    "packages/typeless-sample-bot": {},
+    "packages/typeless-sample-bot": {}
   },
   "plugins": [
     {
