@@ -103,7 +103,7 @@ for subdir in ${subdirs[@]}; do
         # OS agnostic, we will skip them on Windows.
         #
         # Our CI uses Git Bash on Windows to execute this script, which returns "msys" for OSTYPE.
-        if [[ "$OSTYPE" == "msys"]]; then
+        if [[ "$OSTYPE" == "msys" ]]; then
             if [[ "${windows_exempt_tests}" =~ "${d}" ]]; then
                 echo "Skipping ${d} on Windows (in exemption list)"
                 continue
