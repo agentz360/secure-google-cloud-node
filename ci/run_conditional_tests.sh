@@ -83,6 +83,10 @@ RETVAL=0
 
 tests_with_credentials="packages/google-analytics-admin/ packages/google-area120-tables/ packages/google-analytics-data/ packages/google-iam-credentials/ packages/google-apps-meet/ packages/google-chat/ packages/google-streetview-publish/ packages/google-cloud-developerconnect/"
 
+# When running on Windows, the following packages will be skipped. Unit tests that deal with the file system (i.e. hardcoded file path strings)
+# may fail on Windows if not written carefully.
+windows_exempt_tests="packages/gapic-node-processing/"
+
 for subdir in ${subdirs[@]}; do
     for d in `ls -d ${subdir}/*/`; do
         if [ -f "ignore.json" ] && jq -e ".ignored[] | select(. == \"$d\")" ignore.json > /dev/null; then
@@ -93,6 +97,19 @@ for subdir in ${subdirs[@]}; do
             echo "Skipping ${TEST_TYPE} test for handwritten package ${d}"
             continue
         fi
+
+        # Some packages are only used by our bots and automation. These packages do not need to run on Windows and
+        # often employ platform specific code like file system interaction. Until these packages can be updated to be
+        # OS agnostic, we will skip them on Windows.
+        #
+        # Our CI uses Git Bash on Windows to execute this script, which returns "msys" for OSTYPE.
+        if [[ "$OSTYPE" == "msys"]]; then
+            if [[ "${windows_exempt_tests}" =~ "${d}" ]]; then
+                echo "Skipping ${d} on Windows (in exemption list)"
+                continue
+            fi
+        fi
+
         should_test=false
         if [ -n "${GIT_DIFF_ARG}" ]; then
             echo "checking changes with 'git diff --quiet ${GIT_DIFF_ARG} ${d}'"
