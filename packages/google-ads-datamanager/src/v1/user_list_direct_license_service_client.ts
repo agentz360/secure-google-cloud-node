@@ -18,26 +18,30 @@
 
 /* global window */
 import type * as gax from 'google-gax';
-import type {Callback, CallOptions, Descriptors, ClientOptions} from 'google-gax';
-
+import type {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 import {loggingUtils as logging, decodeAnyProtosInArray} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
- * `src/v1/ingestion_service_client_config.json`.
+ * `src/v1/user_list_direct_license_service_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-import * as gapicConfig from './ingestion_service_client_config.json';
+import * as gapicConfig from './user_list_direct_license_service_client_config.json';
 const version = require('../../../package.json').version;
 
 /**
- *  Service for sending audience data to supported destinations.
+ *  Service for managing user list direct licenses. Delete is not a supported
+ *  operation for UserListDirectLicenses.  Callers should update the
+ *  license status to DISABLED to instead to deactivate a license.
+ *
+ *  This feature is only available to data partners.
  * @class
  * @memberof v1
  */
-export class IngestionServiceClient {
+export class UserListDirectLicenseServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
   private _providedCustomServicePath: boolean;
@@ -59,10 +63,10 @@ export class IngestionServiceClient {
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   pathTemplates: {[name: string]: gax.PathTemplate};
-  ingestionServiceStub?: Promise<{[name: string]: Function}>;
+  userListDirectLicenseServiceStub?: Promise<{[name: string]: Function}>;
 
   /**
-   * Construct an instance of IngestionServiceClient.
+   * Construct an instance of UserListDirectLicenseServiceClient.
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
@@ -97,12 +101,12 @@ export class IngestionServiceClient {
    *     HTTP implementation. Load only fallback version and pass it to the constructor:
    *     ```
    *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
-   *     const client = new IngestionServiceClient({fallback: true}, gax);
+   *     const client = new UserListDirectLicenseServiceClient({fallback: true}, gax);
    *     ```
    */
   constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
-    const staticMembers = this.constructor as typeof IngestionServiceClient;
+    const staticMembers = this.constructor as typeof UserListDirectLicenseServiceClient;
     if (opts?.universe_domain && opts?.universeDomain && opts?.universe_domain !== opts?.universeDomain) {
       throw new Error('Please set either universe_domain or universeDomain, but not both.');
     }
@@ -177,6 +181,9 @@ export class IngestionServiceClient {
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this.pathTemplates = {
+      accountPathTemplate: new this._gaxModule.PathTemplate(
+        'accountTypes/{account_type}/accounts/{account}'
+      ),
       partnerLinkPathTemplate: new this._gaxModule.PathTemplate(
         'accountTypes/{account_type}/accounts/{account}/partnerLinks/{partner_link}'
       ),
@@ -194,9 +201,17 @@ export class IngestionServiceClient {
       ),
     };
 
+    // Some of the methods on this service return "paged" results,
+    // (e.g. 50 results at a time, with tokens to get subsequent
+    // pages). Denote the keys used for pagination and results.
+    this.descriptors.page = {
+      listUserListDirectLicenses:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'userListDirectLicenses')
+    };
+
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-        'google.ads.datamanager.v1.IngestionService', gapicConfig as gax.ClientConfig,
+        'google.ads.datamanager.v1.UserListDirectLicenseService', gapicConfig as gax.ClientConfig,
         opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -221,25 +236,25 @@ export class IngestionServiceClient {
    */
   initialize() {
     // If the client stub promise is already initialized, return immediately.
-    if (this.ingestionServiceStub) {
-      return this.ingestionServiceStub;
+    if (this.userListDirectLicenseServiceStub) {
+      return this.userListDirectLicenseServiceStub;
     }
 
     // Put together the "service stub" for
-    // google.ads.datamanager.v1.IngestionService.
-    this.ingestionServiceStub = this._gaxGrpc.createStub(
+    // google.ads.datamanager.v1.UserListDirectLicenseService.
+    this.userListDirectLicenseServiceStub = this._gaxGrpc.createStub(
         this._opts.fallback ?
-          (this._protos as protobuf.Root).lookupService('google.ads.datamanager.v1.IngestionService') :
+          (this._protos as protobuf.Root).lookupService('google.ads.datamanager.v1.UserListDirectLicenseService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this._protos as any).google.ads.datamanager.v1.IngestionService,
+          (this._protos as any).google.ads.datamanager.v1.UserListDirectLicenseService,
         this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const ingestionServiceStubMethods =
-        ['ingestAudienceMembers', 'removeAudienceMembers', 'ingestEvents', 'retrieveRequestStatus'];
-    for (const methodName of ingestionServiceStubMethods) {
-      const callPromise = this.ingestionServiceStub.then(
+    const userListDirectLicenseServiceStubMethods =
+        ['createUserListDirectLicense', 'getUserListDirectLicense', 'updateUserListDirectLicense', 'listUserListDirectLicenses'];
+    for (const methodName of userListDirectLicenseServiceStubMethods) {
+      const callPromise = this.userListDirectLicenseServiceStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
@@ -252,6 +267,7 @@ export class IngestionServiceClient {
         });
 
       const descriptor =
+        this.descriptors.page[methodName] ||
         undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
@@ -263,7 +279,7 @@ export class IngestionServiceClient {
       this.innerApiCalls[methodName] = apiCall;
     }
 
-    return this.ingestionServiceStub;
+    return this.userListDirectLicenseServiceStub;
   }
 
   /**
@@ -340,82 +356,59 @@ export class IngestionServiceClient {
   // -- Service calls --
   // -------------------
 /**
- * Uploads a list of
- * {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources to the
- * provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
+ * Creates a user list direct license.
+ *
+ * This feature is only available to data partners.
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to send the audience members to.
- * @param {number[]} request.audienceMembers
- *   Required. The list of users to send to the specified destinations. At most
- *   10000 {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources
- *   can be sent in a single request.
- * @param {google.ads.datamanager.v1.Consent} [request.consent]
- *   Optional. Request-level consent to apply to all users in the request.
- *   User-level consent overrides request-level consent, and can be specified in
- *   each {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember}.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. For hashed user
- *   identifiers, this is the encoding type of the hashed string. For encrypted
- *   hashed user identifiers, this is the encoding type of the outer encrypted
- *   string, but not necessarily the inner hashed string, meaning the inner
- *   hashed string could be encoded in a different way than the outer encrypted
- *   string. For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.TermsOfService} [request.termsOfService]
- *   Optional. The terms of service that the user has accepted/rejected.
+ * @param {string} request.parent
+ *   Required. The account that owns the user list being licensed. Should be in
+ *   the format accountTypes/{ACCOUNT_TYPE}/accounts/{ACCOUNT_ID}
+ * @param {google.ads.datamanager.v1.UserListDirectLicense} request.userListDirectLicense
+ *   Required. The user list direct license to create.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.IngestAudienceMembersResponse|IngestAudienceMembersResponse}.
+ *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense}.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.ingest_audience_members.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_IngestAudienceMembers_async
+ * @example <caption>include:samples/generated/v1/user_list_direct_license_service.create_user_list_direct_license.js</caption>
+ * region_tag:datamanager_v1_generated_UserListDirectLicenseService_CreateUserListDirectLicense_async
  */
-  ingestAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  createUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|undefined, {}|undefined
       ]>;
-  ingestAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  createUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest,
       options: CallOptions,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  createUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  createUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -429,24 +422,29 @@ export class IngestionServiceClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
     this.initialize().catch(err => {throw err});
-    this._log.info('ingestAudienceMembers request %j', request);
+    this._log.info('createUserListDirectLicense request %j', request);
     const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|null|undefined,
         {}|null|undefined>|undefined = callback
       ? (error, response, options, rawResponse) => {
-          this._log.info('ingestAudienceMembers response %j', response);
+          this._log.info('createUserListDirectLicense response %j', response);
           callback!(error, response, options, rawResponse); // We verified callback above.
         }
       : undefined;
-    return this.innerApiCalls.ingestAudienceMembers(request, options, wrappedCallback)
+    return this.innerApiCalls.createUserListDirectLicense(request, options, wrappedCallback)
       ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.ICreateUserListDirectLicenseRequest|undefined,
         {}|undefined
       ]) => {
-        this._log.info('ingestAudienceMembers response %j', response);
+        this._log.info('createUserListDirectLicense response %j', response);
         return [response, options, rawResponse];
       }).catch((error: any) => {
         if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
@@ -457,71 +455,56 @@ export class IngestionServiceClient {
       });
   }
 /**
- * Removes a list of
- * {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources from
- * the provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
+ * Retrieves a user list direct license.
+ *
+ * This feature is only available to data partners.
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to remove the users from.
- * @param {number[]} request.audienceMembers
- *   Required. The list of users to remove.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. Applies to only the
- *   outer encoding for encrypted user identifiers. For non `UserData` uploads,
- *   this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
+ * @param {string} request.name
+ *   Required. The resource name of the user list direct license.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.RemoveAudienceMembersResponse|RemoveAudienceMembersResponse}.
+ *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense}.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.remove_audience_members.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_RemoveAudienceMembers_async
+ * @example <caption>include:samples/generated/v1/user_list_direct_license_service.get_user_list_direct_license.js</caption>
+ * region_tag:datamanager_v1_generated_UserListDirectLicenseService_GetUserListDirectLicense_async
  */
-  removeAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
+  getUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|undefined, {}|undefined
       ]>;
-  removeAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
+  getUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest,
       options: CallOptions,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  removeAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
+  getUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  removeAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
+  getUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -535,24 +518,29 @@ export class IngestionServiceClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
     this.initialize().catch(err => {throw err});
-    this._log.info('removeAudienceMembers request %j', request);
+    this._log.info('getUserListDirectLicense request %j', request);
     const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|null|undefined,
         {}|null|undefined>|undefined = callback
       ? (error, response, options, rawResponse) => {
-          this._log.info('removeAudienceMembers response %j', response);
+          this._log.info('getUserListDirectLicense response %j', response);
           callback!(error, response, options, rawResponse); // We verified callback above.
         }
       : undefined;
-    return this.innerApiCalls.removeAudienceMembers(request, options, wrappedCallback)
+    return this.innerApiCalls.getUserListDirectLicense(request, options, wrappedCallback)
       ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IGetUserListDirectLicenseRequest|undefined,
         {}|undefined
       ]) => {
-        this._log.info('removeAudienceMembers response %j', response);
+        this._log.info('getUserListDirectLicense response %j', response);
         return [response, options, rawResponse];
       }).catch((error: any) => {
         if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
@@ -563,80 +551,60 @@ export class IngestionServiceClient {
       });
   }
 /**
- * Uploads a list of
- * {@link protos.google.ads.datamanager.v1.Event|Event} resources from
- * the provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
+ * Updates a user list direct license.
+ *
+ * This feature is only available to data partners.
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to send the events to.
- * @param {number[]} request.events
- *   Required. The list of events to send to the specified destinations. At most
- *   2000 {@link protos.google.ads.datamanager.v1.Event|Event} resources
- *   can be sent in a single request.
- * @param {google.ads.datamanager.v1.Consent} [request.consent]
- *   Optional. Request-level consent to apply to all users in the request.
- *   User-level consent overrides request-level consent, and can be specified in
- *   each {@link protos.google.ads.datamanager.v1.Event|Event}.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. For hashed user
- *   identifiers, this is the encoding type of the hashed string. For encrypted
- *   hashed user identifiers, this is the encoding type of the outer encrypted
- *   string, but not necessarily the inner hashed string, meaning the inner
- *   hashed string could be encoded in a different way than the outer encrypted
- *   string. For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
+ * @param {google.ads.datamanager.v1.UserListDirectLicense} request.userListDirectLicense
+ *   Required. The licenses' `name` field is used to identify the license to
+ *   update.
+ * @param {google.protobuf.FieldMask} [request.updateMask]
+ *   Optional. The list of fields to update. The special character `*` is not
+ *   supported and an `INVALID_UPDATE_MASK` error will be thrown if used.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.IngestEventsResponse|IngestEventsResponse}.
+ *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense}.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.ingest_events.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_IngestEvents_async
+ * @example <caption>include:samples/generated/v1/user_list_direct_license_service.update_user_list_direct_license.js</caption>
+ * region_tag:datamanager_v1_generated_UserListDirectLicenseService_UpdateUserListDirectLicense_async
  */
-  ingestEvents(
-      request?: protos.google.ads.datamanager.v1.IIngestEventsRequest,
+  updateUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|undefined, {}|undefined
       ]>;
-  ingestEvents(
-      request: protos.google.ads.datamanager.v1.IIngestEventsRequest,
+  updateUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest,
       options: CallOptions,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestEvents(
-      request: protos.google.ads.datamanager.v1.IIngestEventsRequest,
+  updateUserListDirectLicense(
+      request: protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestEvents(
-      request?: protos.google.ads.datamanager.v1.IIngestEventsRequest,
+  updateUserListDirectLicense(
+      request?: protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense,
+          protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -650,113 +618,29 @@ export class IngestionServiceClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'user_list_direct_license.name': request.userListDirectLicense!.name ?? '',
+    });
     this.initialize().catch(err => {throw err});
-    this._log.info('ingestEvents request %j', request);
+    this._log.info('updateUserListDirectLicense request %j', request);
     const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|null|undefined,
         {}|null|undefined>|undefined = callback
       ? (error, response, options, rawResponse) => {
-          this._log.info('ingestEvents response %j', response);
+          this._log.info('updateUserListDirectLicense response %j', response);
           callback!(error, response, options, rawResponse); // We verified callback above.
         }
       : undefined;
-    return this.innerApiCalls.ingestEvents(request, options, wrappedCallback)
+    return this.innerApiCalls.updateUserListDirectLicense(request, options, wrappedCallback)
       ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined,
+        protos.google.ads.datamanager.v1.IUserListDirectLicense,
+        protos.google.ads.datamanager.v1.IUpdateUserListDirectLicenseRequest|undefined,
         {}|undefined
       ]) => {
-        this._log.info('ingestEvents response %j', response);
-        return [response, options, rawResponse];
-      }).catch((error: any) => {
-        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
-          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
-          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
-        }
-        throw error;
-      });
-  }
-/**
- * Gets the status of a request given request id.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.requestId
- *   Required. Required. The request ID of the Data Manager API request.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.RetrieveRequestStatusResponse|RetrieveRequestStatusResponse}.
- *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.retrieve_request_status.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_RetrieveRequestStatus_async
- */
-  retrieveRequestStatus(
-      request?: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined, {}|undefined
-      ]>;
-  retrieveRequestStatus(
-      request: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>): void;
-  retrieveRequestStatus(
-      request: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>): void;
-  retrieveRequestStatus(
-      request?: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    this.initialize().catch(err => {throw err});
-    this._log.info('retrieveRequestStatus request %j', request);
-    const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-        {}|null|undefined>|undefined = callback
-      ? (error, response, options, rawResponse) => {
-          this._log.info('retrieveRequestStatus response %j', response);
-          callback!(error, response, options, rawResponse); // We verified callback above.
-        }
-      : undefined;
-    return this.innerApiCalls.retrieveRequestStatus(request, options, wrappedCallback)
-      ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined,
-        {}|undefined
-      ]) => {
-        this._log.info('retrieveRequestStatus response %j', response);
+        this._log.info('updateUserListDirectLicense response %j', response);
         return [response, options, rawResponse];
       }).catch((error: any) => {
         if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
@@ -767,9 +651,328 @@ export class IngestionServiceClient {
       });
   }
 
+ /**
+ * Lists all user list direct licenses owned by the parent account.
+ *
+ * This feature is only available to data partners.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The account whose licenses are being queried. Should be in the
+ *   format accountTypes/{ACCOUNT_TYPE}/accounts/{ACCOUNT_ID}
+ * @param {string} [request.filter]
+ *   Optional. Filters to apply to the list request. All fields need to be on
+ *   the left hand side of each condition (for example: user_list_id = 123).
+ *
+ *   **Supported Operations:**
+ *
+ *   - `AND`
+ *   - `=`
+ *   - `!=`
+ *   - `>`
+ *   - `>=`
+ *   - `<`
+ *   - `<=`
+ *
+ *   **Unsupported Fields:**
+ *
+ *   - `name` (use get method instead)
+ *   - `historical_pricings` and all its subfields
+ *   - `pricing.start_time`
+ *   - `pricing.end_time`
+ * @param {number} [request.pageSize]
+ *   Optional. The maximum number of licenses to return per page. The service
+ *   may return fewer than this value. If unspecified, at most 50 licenses will
+ *   be returned. The maximum value is 1000; values above 1000 will be coerced
+ *   to 1000.
+ * @param {string} [request.pageToken]
+ *   Optional. A page token, received from a previous
+ *   `ListUserListDirectLicense` call. Provide this to retrieve the subsequent
+ *   page.
+ *
+ *   When paginating, all other parameters provided to
+ *   `ListUserListDirectLicense` must match the call that provided the page
+ *   token.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is Array of {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense}.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed and will merge results from all the pages into this array.
+ *   Note that it can affect your quota.
+ *   We recommend using `listUserListDirectLicensesAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
+  listUserListDirectLicenses(
+      request?: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.ads.datamanager.v1.IUserListDirectLicense[],
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest|null,
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse
+      ]>;
+  listUserListDirectLicenses(
+      request: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense>): void;
+  listUserListDirectLicenses(
+      request: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      callback: PaginationCallback<
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense>): void;
+  listUserListDirectLicenses(
+      request?: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      optionsOrCallback?: CallOptions|PaginationCallback<
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense>,
+      callback?: PaginationCallback<
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+          protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse|null|undefined,
+          protos.google.ads.datamanager.v1.IUserListDirectLicense>):
+      Promise<[
+        protos.google.ads.datamanager.v1.IUserListDirectLicense[],
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest|null,
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    this.initialize().catch(err => {throw err});
+    const wrappedCallback: PaginationCallback<
+      protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse|null|undefined,
+      protos.google.ads.datamanager.v1.IUserListDirectLicense>|undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listUserListDirectLicenses values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listUserListDirectLicenses request %j', request);
+    return this.innerApiCalls
+      .listUserListDirectLicenses(request, options, wrappedCallback)
+      ?.then(([response, input, output]: [
+        protos.google.ads.datamanager.v1.IUserListDirectLicense[],
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest|null,
+        protos.google.ads.datamanager.v1.IListUserListDirectLicensesResponse
+      ]) => {
+        this._log.info('listUserListDirectLicenses values %j', response);
+        return [response, input, output];
+      });
+  }
+
+/**
+ * Equivalent to `listUserListDirectLicenses`, but returns a NodeJS Stream object.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The account whose licenses are being queried. Should be in the
+ *   format accountTypes/{ACCOUNT_TYPE}/accounts/{ACCOUNT_ID}
+ * @param {string} [request.filter]
+ *   Optional. Filters to apply to the list request. All fields need to be on
+ *   the left hand side of each condition (for example: user_list_id = 123).
+ *
+ *   **Supported Operations:**
+ *
+ *   - `AND`
+ *   - `=`
+ *   - `!=`
+ *   - `>`
+ *   - `>=`
+ *   - `<`
+ *   - `<=`
+ *
+ *   **Unsupported Fields:**
+ *
+ *   - `name` (use get method instead)
+ *   - `historical_pricings` and all its subfields
+ *   - `pricing.start_time`
+ *   - `pricing.end_time`
+ * @param {number} [request.pageSize]
+ *   Optional. The maximum number of licenses to return per page. The service
+ *   may return fewer than this value. If unspecified, at most 50 licenses will
+ *   be returned. The maximum value is 1000; values above 1000 will be coerced
+ *   to 1000.
+ * @param {string} [request.pageToken]
+ *   Optional. A page token, received from a previous
+ *   `ListUserListDirectLicense` call. Provide this to retrieve the subsequent
+ *   page.
+ *
+ *   When paginating, all other parameters provided to
+ *   `ListUserListDirectLicense` must match the call that provided the page
+ *   token.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits an object representing {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense} on 'data' event.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed. Note that it can affect your quota.
+ *   We recommend using `listUserListDirectLicensesAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
+  listUserListDirectLicensesStream(
+      request?: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      options?: CallOptions):
+    Transform{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    const defaultCallSettings = this._defaults['listUserListDirectLicenses'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize().catch(err => {throw err});
+    this._log.info('listUserListDirectLicenses stream %j', request);
+    return this.descriptors.page.listUserListDirectLicenses.createStream(
+      this.innerApiCalls.listUserListDirectLicenses as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+/**
+ * Equivalent to `listUserListDirectLicenses`, but returns an iterable object.
+ *
+ * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   Required. The account whose licenses are being queried. Should be in the
+ *   format accountTypes/{ACCOUNT_TYPE}/accounts/{ACCOUNT_ID}
+ * @param {string} [request.filter]
+ *   Optional. Filters to apply to the list request. All fields need to be on
+ *   the left hand side of each condition (for example: user_list_id = 123).
+ *
+ *   **Supported Operations:**
+ *
+ *   - `AND`
+ *   - `=`
+ *   - `!=`
+ *   - `>`
+ *   - `>=`
+ *   - `<`
+ *   - `<=`
+ *
+ *   **Unsupported Fields:**
+ *
+ *   - `name` (use get method instead)
+ *   - `historical_pricings` and all its subfields
+ *   - `pricing.start_time`
+ *   - `pricing.end_time`
+ * @param {number} [request.pageSize]
+ *   Optional. The maximum number of licenses to return per page. The service
+ *   may return fewer than this value. If unspecified, at most 50 licenses will
+ *   be returned. The maximum value is 1000; values above 1000 will be coerced
+ *   to 1000.
+ * @param {string} [request.pageToken]
+ *   Optional. A page token, received from a previous
+ *   `ListUserListDirectLicense` call. Provide this to retrieve the subsequent
+ *   page.
+ *
+ *   When paginating, all other parameters provided to
+ *   `ListUserListDirectLicense` must match the call that provided the page
+ *   token.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Object}
+ *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+ *   When you iterate the returned iterable, each element will be an object representing
+ *   {@link protos.google.ads.datamanager.v1.UserListDirectLicense|UserListDirectLicense}. The API will be called under the hood as needed, once per the page,
+ *   so you can stop the iteration when you don't need more results.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1/user_list_direct_license_service.list_user_list_direct_licenses.js</caption>
+ * region_tag:datamanager_v1_generated_UserListDirectLicenseService_ListUserListDirectLicenses_async
+ */
+  listUserListDirectLicensesAsync(
+      request?: protos.google.ads.datamanager.v1.IListUserListDirectLicensesRequest,
+      options?: CallOptions):
+    AsyncIterable<protos.google.ads.datamanager.v1.IUserListDirectLicense>{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
+    const defaultCallSettings = this._defaults['listUserListDirectLicenses'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize().catch(err => {throw err});
+    this._log.info('listUserListDirectLicenses iterate %j', request);
+    return this.descriptors.page.listUserListDirectLicenses.asyncIterate(
+      this.innerApiCalls['listUserListDirectLicenses'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.ads.datamanager.v1.IUserListDirectLicense>;
+  }
   // --------------------
   // -- Path templates --
   // --------------------
+
+  /**
+   * Return a fully-qualified account resource name string.
+   *
+   * @param {string} account_type
+   * @param {string} account
+   * @returns {string} Resource name string.
+   */
+  accountPath(accountType:string,account:string) {
+    return this.pathTemplates.accountPathTemplate.render({
+      account_type: accountType,
+      account: account,
+    });
+  }
+
+  /**
+   * Parse the account_type from Account resource.
+   *
+   * @param {string} accountName
+   *   A fully-qualified path representing Account resource.
+   * @returns {string} A string representing the account_type.
+   */
+  matchAccountTypeFromAccountName(accountName: string) {
+    return this.pathTemplates.accountPathTemplate.match(accountName).account_type;
+  }
+
+  /**
+   * Parse the account from Account resource.
+   *
+   * @param {string} accountName
+   *   A fully-qualified path representing Account resource.
+   * @returns {string} A string representing the account.
+   */
+  matchAccountFromAccountName(accountName: string) {
+    return this.pathTemplates.accountPathTemplate.match(accountName).account;
+  }
 
   /**
    * Return a fully-qualified partnerLink resource name string.
@@ -1036,8 +1239,8 @@ export class IngestionServiceClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    if (this.ingestionServiceStub && !this._terminated) {
-      return this.ingestionServiceStub.then(stub => {
+    if (this.userListDirectLicenseServiceStub && !this._terminated) {
+      return this.userListDirectLicenseServiceStub.then(stub => {
         this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();

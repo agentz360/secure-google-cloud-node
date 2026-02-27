@@ -26,18 +26,20 @@ import {loggingUtils as logging, decodeAnyProtosInArray} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
- * `src/v1/ingestion_service_client_config.json`.
+ * `src/v1/marketing_data_insights_service_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-import * as gapicConfig from './ingestion_service_client_config.json';
+import * as gapicConfig from './marketing_data_insights_service_client_config.json';
 const version = require('../../../package.json').version;
 
 /**
- *  Service for sending audience data to supported destinations.
+ *  Service to return insights on marketing data.
+ *
+ *  This feature is only available to data partners.
  * @class
  * @memberof v1
  */
-export class IngestionServiceClient {
+export class MarketingDataInsightsServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
   private _providedCustomServicePath: boolean;
@@ -59,10 +61,10 @@ export class IngestionServiceClient {
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   pathTemplates: {[name: string]: gax.PathTemplate};
-  ingestionServiceStub?: Promise<{[name: string]: Function}>;
+  marketingDataInsightsServiceStub?: Promise<{[name: string]: Function}>;
 
   /**
-   * Construct an instance of IngestionServiceClient.
+   * Construct an instance of MarketingDataInsightsServiceClient.
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
@@ -97,12 +99,12 @@ export class IngestionServiceClient {
    *     HTTP implementation. Load only fallback version and pass it to the constructor:
    *     ```
    *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
-   *     const client = new IngestionServiceClient({fallback: true}, gax);
+   *     const client = new MarketingDataInsightsServiceClient({fallback: true}, gax);
    *     ```
    */
   constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
-    const staticMembers = this.constructor as typeof IngestionServiceClient;
+    const staticMembers = this.constructor as typeof MarketingDataInsightsServiceClient;
     if (opts?.universe_domain && opts?.universeDomain && opts?.universe_domain !== opts?.universeDomain) {
       throw new Error('Please set either universe_domain or universeDomain, but not both.');
     }
@@ -196,7 +198,7 @@ export class IngestionServiceClient {
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-        'google.ads.datamanager.v1.IngestionService', gapicConfig as gax.ClientConfig,
+        'google.ads.datamanager.v1.MarketingDataInsightsService', gapicConfig as gax.ClientConfig,
         opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -221,25 +223,25 @@ export class IngestionServiceClient {
    */
   initialize() {
     // If the client stub promise is already initialized, return immediately.
-    if (this.ingestionServiceStub) {
-      return this.ingestionServiceStub;
+    if (this.marketingDataInsightsServiceStub) {
+      return this.marketingDataInsightsServiceStub;
     }
 
     // Put together the "service stub" for
-    // google.ads.datamanager.v1.IngestionService.
-    this.ingestionServiceStub = this._gaxGrpc.createStub(
+    // google.ads.datamanager.v1.MarketingDataInsightsService.
+    this.marketingDataInsightsServiceStub = this._gaxGrpc.createStub(
         this._opts.fallback ?
-          (this._protos as protobuf.Root).lookupService('google.ads.datamanager.v1.IngestionService') :
+          (this._protos as protobuf.Root).lookupService('google.ads.datamanager.v1.MarketingDataInsightsService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this._protos as any).google.ads.datamanager.v1.IngestionService,
+          (this._protos as any).google.ads.datamanager.v1.MarketingDataInsightsService,
         this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const ingestionServiceStubMethods =
-        ['ingestAudienceMembers', 'removeAudienceMembers', 'ingestEvents', 'retrieveRequestStatus'];
-    for (const methodName of ingestionServiceStubMethods) {
-      const callPromise = this.ingestionServiceStub.then(
+    const marketingDataInsightsServiceStubMethods =
+        ['retrieveInsights'];
+    for (const methodName of marketingDataInsightsServiceStubMethods) {
+      const callPromise = this.marketingDataInsightsServiceStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
@@ -263,7 +265,7 @@ export class IngestionServiceClient {
       this.innerApiCalls[methodName] = apiCall;
     }
 
-    return this.ingestionServiceStub;
+    return this.marketingDataInsightsServiceStub;
   }
 
   /**
@@ -340,82 +342,74 @@ export class IngestionServiceClient {
   // -- Service calls --
   // -------------------
 /**
- * Uploads a list of
- * {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources to the
- * provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
+ * Retrieves marketing data insights for a given user list.
+ *
+ * This feature is only available to data partners.
+ *
+ * Authorization Headers:
+ *
+ * This method supports the following optional headers to define how the API
+ * authorizes access for the request:
+ *
+ * * `login-account`: (Optional) The resource name of the account where the
+ *   Google Account of the credentials is a user. If not set, defaults to the
+ *   account of the request. Format:
+ *   `accountTypes/{loginAccountType}/accounts/{loginAccountId}`
+ * * `linked-account`: (Optional) The resource name of the account with an
+ *    established product link to the `login-account`. Format:
+ *    `accountTypes/{linkedAccountType}/accounts/{linkedAccountId}`
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to send the audience members to.
- * @param {number[]} request.audienceMembers
- *   Required. The list of users to send to the specified destinations. At most
- *   10000 {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources
- *   can be sent in a single request.
- * @param {google.ads.datamanager.v1.Consent} [request.consent]
- *   Optional. Request-level consent to apply to all users in the request.
- *   User-level consent overrides request-level consent, and can be specified in
- *   each {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember}.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. For hashed user
- *   identifiers, this is the encoding type of the hashed string. For encrypted
- *   hashed user identifiers, this is the encoding type of the outer encrypted
- *   string, but not necessarily the inner hashed string, meaning the inner
- *   hashed string could be encoded in a different way than the outer encrypted
- *   string. For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.TermsOfService} [request.termsOfService]
- *   Optional. The terms of service that the user has accepted/rejected.
+ * @param {string} request.parent
+ *   Required. The parent account that owns the user list.
+ *   Format: `accountTypes/{account_type}/accounts/{account}`
+ * @param {google.ads.datamanager.v1.Baseline} request.baseline
+ *   Required. Baseline for the insights requested.
+ * @param {string} request.userListId
+ *   Required. The user list ID for which insights are requested.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.IngestAudienceMembersResponse|IngestAudienceMembersResponse}.
+ *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.RetrieveInsightsResponse|RetrieveInsightsResponse}.
  *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.ingest_audience_members.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_IngestAudienceMembers_async
+ * @example <caption>include:samples/generated/v1/marketing_data_insights_service.retrieve_insights.js</caption>
+ * region_tag:datamanager_v1_generated_MarketingDataInsightsService_RetrieveInsights_async
  */
-  ingestAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  retrieveInsights(
+      request?: protos.google.ads.datamanager.v1.IRetrieveInsightsRequest,
       options?: CallOptions):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|undefined, {}|undefined
       ]>;
-  ingestAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  retrieveInsights(
+      request: protos.google.ads.datamanager.v1.IRetrieveInsightsRequest,
       options: CallOptions,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  retrieveInsights(
+      request: protos.google.ads.datamanager.v1.IRetrieveInsightsRequest,
       callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|null|undefined,
           {}|null|undefined>): void;
-  ingestAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest,
+  retrieveInsights(
+      request?: protos.google.ads.datamanager.v1.IRetrieveInsightsRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+          protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined, {}|undefined
+        protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -429,334 +423,29 @@ export class IngestionServiceClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
+    });
     this.initialize().catch(err => {throw err});
-    this._log.info('ingestAudienceMembers request %j', request);
+    this._log.info('retrieveInsights request %j', request);
     const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|null|undefined,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|null|undefined,
         {}|null|undefined>|undefined = callback
       ? (error, response, options, rawResponse) => {
-          this._log.info('ingestAudienceMembers response %j', response);
+          this._log.info('retrieveInsights response %j', response);
           callback!(error, response, options, rawResponse); // We verified callback above.
         }
       : undefined;
-    return this.innerApiCalls.ingestAudienceMembers(request, options, wrappedCallback)
+    return this.innerApiCalls.retrieveInsights(request, options, wrappedCallback)
       ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IIngestAudienceMembersRequest|undefined,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsResponse,
+        protos.google.ads.datamanager.v1.IRetrieveInsightsRequest|undefined,
         {}|undefined
       ]) => {
-        this._log.info('ingestAudienceMembers response %j', response);
-        return [response, options, rawResponse];
-      }).catch((error: any) => {
-        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
-          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
-          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
-        }
-        throw error;
-      });
-  }
-/**
- * Removes a list of
- * {@link protos.google.ads.datamanager.v1.AudienceMember|AudienceMember} resources from
- * the provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to remove the users from.
- * @param {number[]} request.audienceMembers
- *   Required. The list of users to remove.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. Applies to only the
- *   outer encoding for encrypted user identifiers. For non `UserData` uploads,
- *   this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.RemoveAudienceMembersResponse|RemoveAudienceMembersResponse}.
- *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.remove_audience_members.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_RemoveAudienceMembers_async
- */
-  removeAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined, {}|undefined
-      ]>;
-  removeAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
-          {}|null|undefined>): void;
-  removeAudienceMembers(
-      request: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
-          {}|null|undefined>): void;
-  removeAudienceMembers(
-      request?: protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-          protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    this.initialize().catch(err => {throw err});
-    this._log.info('removeAudienceMembers request %j', request);
-    const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|null|undefined,
-        {}|null|undefined>|undefined = callback
-      ? (error, response, options, rawResponse) => {
-          this._log.info('removeAudienceMembers response %j', response);
-          callback!(error, response, options, rawResponse); // We verified callback above.
-        }
-      : undefined;
-    return this.innerApiCalls.removeAudienceMembers(request, options, wrappedCallback)
-      ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse,
-        protos.google.ads.datamanager.v1.IRemoveAudienceMembersRequest|undefined,
-        {}|undefined
-      ]) => {
-        this._log.info('removeAudienceMembers response %j', response);
-        return [response, options, rawResponse];
-      }).catch((error: any) => {
-        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
-          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
-          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
-        }
-        throw error;
-      });
-  }
-/**
- * Uploads a list of
- * {@link protos.google.ads.datamanager.v1.Event|Event} resources from
- * the provided {@link protos.google.ads.datamanager.v1.Destination|Destination}.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {number[]} request.destinations
- *   Required. The list of destinations to send the events to.
- * @param {number[]} request.events
- *   Required. The list of events to send to the specified destinations. At most
- *   2000 {@link protos.google.ads.datamanager.v1.Event|Event} resources
- *   can be sent in a single request.
- * @param {google.ads.datamanager.v1.Consent} [request.consent]
- *   Optional. Request-level consent to apply to all users in the request.
- *   User-level consent overrides request-level consent, and can be specified in
- *   each {@link protos.google.ads.datamanager.v1.Event|Event}.
- * @param {boolean} [request.validateOnly]
- *   Optional. For testing purposes. If `true`, the request is validated but not
- *   executed. Only errors are returned, not results.
- * @param {google.ads.datamanager.v1.Encoding} [request.encoding]
- *   Optional. Required for {@link protos.google.ads.datamanager.v1.UserData|UserData}
- *   uploads. The encoding type of the user identifiers. For hashed user
- *   identifiers, this is the encoding type of the hashed string. For encrypted
- *   hashed user identifiers, this is the encoding type of the outer encrypted
- *   string, but not necessarily the inner hashed string, meaning the inner
- *   hashed string could be encoded in a different way than the outer encrypted
- *   string. For non `UserData` uploads, this field is ignored.
- * @param {google.ads.datamanager.v1.EncryptionInfo} [request.encryptionInfo]
- *   Optional. Encryption information for
- *   {@link protos.google.ads.datamanager.v1.UserData|UserData} uploads. If not set, it's
- *   assumed that uploaded identifying information is hashed but not encrypted.
- *   For non `UserData` uploads, this field is ignored.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.IngestEventsResponse|IngestEventsResponse}.
- *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.ingest_events.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_IngestEvents_async
- */
-  ingestEvents(
-      request?: protos.google.ads.datamanager.v1.IIngestEventsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined, {}|undefined
-      ]>;
-  ingestEvents(
-      request: protos.google.ads.datamanager.v1.IIngestEventsRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
-          {}|null|undefined>): void;
-  ingestEvents(
-      request: protos.google.ads.datamanager.v1.IIngestEventsRequest,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
-          {}|null|undefined>): void;
-  ingestEvents(
-      request?: protos.google.ads.datamanager.v1.IIngestEventsRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.ads.datamanager.v1.IIngestEventsResponse,
-          protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    this.initialize().catch(err => {throw err});
-    this._log.info('ingestEvents request %j', request);
-    const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|null|undefined,
-        {}|null|undefined>|undefined = callback
-      ? (error, response, options, rawResponse) => {
-          this._log.info('ingestEvents response %j', response);
-          callback!(error, response, options, rawResponse); // We verified callback above.
-        }
-      : undefined;
-    return this.innerApiCalls.ingestEvents(request, options, wrappedCallback)
-      ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IIngestEventsResponse,
-        protos.google.ads.datamanager.v1.IIngestEventsRequest|undefined,
-        {}|undefined
-      ]) => {
-        this._log.info('ingestEvents response %j', response);
-        return [response, options, rawResponse];
-      }).catch((error: any) => {
-        if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
-          const protos = this._gaxModule.protobuf.Root.fromJSON(jsonProtos) as unknown as gax.protobuf.Type;
-          error.statusDetails = decodeAnyProtosInArray(error.statusDetails, protos);
-        }
-        throw error;
-      });
-  }
-/**
- * Gets the status of a request given request id.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.requestId
- *   Required. Required. The request ID of the Data Manager API request.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing {@link protos.google.ads.datamanager.v1.RetrieveRequestStatusResponse|RetrieveRequestStatusResponse}.
- *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1/ingestion_service.retrieve_request_status.js</caption>
- * region_tag:datamanager_v1_generated_IngestionService_RetrieveRequestStatus_async
- */
-  retrieveRequestStatus(
-      request?: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined, {}|undefined
-      ]>;
-  retrieveRequestStatus(
-      request: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>): void;
-  retrieveRequestStatus(
-      request: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      callback: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>): void;
-  retrieveRequestStatus(
-      request?: protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-          protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    this.initialize().catch(err => {throw err});
-    this._log.info('retrieveRequestStatus request %j', request);
-    const wrappedCallback: Callback<
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|null|undefined,
-        {}|null|undefined>|undefined = callback
-      ? (error, response, options, rawResponse) => {
-          this._log.info('retrieveRequestStatus response %j', response);
-          callback!(error, response, options, rawResponse); // We verified callback above.
-        }
-      : undefined;
-    return this.innerApiCalls.retrieveRequestStatus(request, options, wrappedCallback)
-      ?.then(([response, options, rawResponse]: [
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse,
-        protos.google.ads.datamanager.v1.IRetrieveRequestStatusRequest|undefined,
-        {}|undefined
-      ]) => {
-        this._log.info('retrieveRequestStatus response %j', response);
+        this._log.info('retrieveInsights response %j', response);
         return [response, options, rawResponse];
       }).catch((error: any) => {
         if (error && 'statusDetails' in error && error.statusDetails instanceof Array) {
@@ -1036,8 +725,8 @@ export class IngestionServiceClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    if (this.ingestionServiceStub && !this._terminated) {
-      return this.ingestionServiceStub.then(stub => {
+    if (this.marketingDataInsightsServiceStub && !this._terminated) {
+      return this.marketingDataInsightsServiceStub.then(stub => {
         this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();

@@ -21,7 +21,7 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
-import * as ingestionserviceModule from '../src';
+import * as marketingdatainsightsserviceModule from '../src';
 
 import {protobuf} from 'google-gax';
 
@@ -52,16 +52,16 @@ function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error
     return error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
 }
 
-describe('v1.IngestionServiceClient', () => {
+describe('v1.MarketingDataInsightsServiceClient', () => {
     describe('Common methods', () => {
         it('has apiEndpoint', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient();
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient();
             const apiEndpoint = client.apiEndpoint;
             assert.strictEqual(apiEndpoint, 'datamanager.googleapis.com');
         });
 
         it('has universeDomain', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient();
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient();
             const universeDomain = client.universeDomain;
             assert.strictEqual(universeDomain, "googleapis.com");
         });
@@ -69,7 +69,7 @@ describe('v1.IngestionServiceClient', () => {
         if (typeof process === 'object' && typeof process.emitWarning === 'function') {
             it('throws DeprecationWarning if static servicePath is used', () => {
                 const stub = sinon.stub(process, 'emitWarning');
-                const servicePath = ingestionserviceModule.v1.IngestionServiceClient.servicePath;
+                const servicePath = marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient.servicePath;
                 assert.strictEqual(servicePath, 'datamanager.googleapis.com');
                 assert(stub.called);
                 stub.restore();
@@ -77,20 +77,20 @@ describe('v1.IngestionServiceClient', () => {
 
             it('throws DeprecationWarning if static apiEndpoint is used', () => {
                 const stub = sinon.stub(process, 'emitWarning');
-                const apiEndpoint = ingestionserviceModule.v1.IngestionServiceClient.apiEndpoint;
+                const apiEndpoint = marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient.apiEndpoint;
                 assert.strictEqual(apiEndpoint, 'datamanager.googleapis.com');
                 assert(stub.called);
                 stub.restore();
             });
         }
         it('sets apiEndpoint according to universe domain camelCase', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({universeDomain: 'example.com'});
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({universeDomain: 'example.com'});
             const servicePath = client.apiEndpoint;
             assert.strictEqual(servicePath, 'datamanager.example.com');
         });
 
         it('sets apiEndpoint according to universe domain snakeCase', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({universe_domain: 'example.com'});
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({universe_domain: 'example.com'});
             const servicePath = client.apiEndpoint;
             assert.strictEqual(servicePath, 'datamanager.example.com');
         });
@@ -100,7 +100,7 @@ describe('v1.IngestionServiceClient', () => {
                 it('sets apiEndpoint from environment variable', () => {
                     const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
                     process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
-                    const client = new ingestionserviceModule.v1.IngestionServiceClient();
+                    const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient();
                     const servicePath = client.apiEndpoint;
                     assert.strictEqual(servicePath, 'datamanager.example.com');
                     if (saved) {
@@ -113,7 +113,7 @@ describe('v1.IngestionServiceClient', () => {
                 it('value configured in code has priority over environment variable', () => {
                     const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
                     process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
-                    const client = new ingestionserviceModule.v1.IngestionServiceClient({universeDomain: 'configured.example.com'});
+                    const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({universeDomain: 'configured.example.com'});
                     const servicePath = client.apiEndpoint;
                     assert.strictEqual(servicePath, 'datamanager.configured.example.com');
                     if (saved) {
@@ -125,55 +125,55 @@ describe('v1.IngestionServiceClient', () => {
             });
         }
         it('does not allow setting both universeDomain and universe_domain', () => {
-            assert.throws(() => { new ingestionserviceModule.v1.IngestionServiceClient({universe_domain: 'example.com', universeDomain: 'example.net'}); });
+            assert.throws(() => { new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({universe_domain: 'example.com', universeDomain: 'example.net'}); });
         });
 
         it('has port', () => {
-            const port = ingestionserviceModule.v1.IngestionServiceClient.port;
+            const port = marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient.port;
             assert(port);
             assert(typeof port === 'number');
         });
 
         it('should create a client with no option', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient();
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient();
             assert(client);
         });
 
         it('should create a client with gRPC fallback', () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 fallback: true,
             });
             assert(client);
         });
 
         it('has initialize method and supports deferred initialization', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
-            assert.strictEqual(client.ingestionServiceStub, undefined);
+            assert.strictEqual(client.marketingDataInsightsServiceStub, undefined);
             await client.initialize();
-            assert(client.ingestionServiceStub);
+            assert(client.marketingDataInsightsServiceStub);
         });
 
         it('has close method for the initialized client', done => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             client.initialize().catch(err => {throw err});
-            assert(client.ingestionServiceStub);
+            assert(client.marketingDataInsightsServiceStub);
             client.close().then(() => {
                 done();
             }).catch(err => {throw err});
         });
 
         it('has close method for the non-initialized client', done => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
-            assert.strictEqual(client.ingestionServiceStub, undefined);
+            assert.strictEqual(client.marketingDataInsightsServiceStub, undefined);
             client.close().then(() => {
                 done();
             }).catch(err => {throw err});
@@ -181,7 +181,7 @@ describe('v1.IngestionServiceClient', () => {
 
         it('has getProjectId method', async () => {
             const fakeProjectId = 'fake-project-id';
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -193,7 +193,7 @@ describe('v1.IngestionServiceClient', () => {
 
         it('has getProjectId method with callback', async () => {
             const fakeProjectId = 'fake-project-id';
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
@@ -212,41 +212,55 @@ describe('v1.IngestionServiceClient', () => {
         });
     });
 
-    describe('ingestAudienceMembers', () => {
-        it('invokes ingestAudienceMembers without error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+    describe('retrieveInsights', () => {
+        it('invokes retrieveInsights without error', async () => {
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersRequest()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsRequest()
             );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.ads.datamanager.v1.RetrieveInsightsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersResponse()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsResponse()
             );
-            client.innerApiCalls.ingestAudienceMembers = stubSimpleCall(expectedResponse);
-            const [response] = await client.ingestAudienceMembers(request);
+            client.innerApiCalls.retrieveInsights = stubSimpleCall(expectedResponse);
+            const [response] = await client.retrieveInsights(request);
             assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes ingestAudienceMembers without error using callback', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+        it('invokes retrieveInsights without error using callback', async () => {
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersRequest()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsRequest()
             );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.ads.datamanager.v1.RetrieveInsightsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersResponse()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsResponse()
             );
-            client.innerApiCalls.ingestAudienceMembers = stubSimpleCallWithCallback(expectedResponse);
+            client.innerApiCalls.retrieveInsights = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
-                 client.ingestAudienceMembers(
+                 client.retrieveInsights(
                     request,
-                    (err?: Error|null, result?: protos.google.ads.datamanager.v1.IIngestAudienceMembersResponse|null) => {
+                    (err?: Error|null, result?: protos.google.ads.datamanager.v1.IRetrieveInsightsResponse|null) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -256,259 +270,53 @@ describe('v1.IngestionServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes ingestAudienceMembers with error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+        it('invokes retrieveInsights with error', async () => {
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersRequest()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsRequest()
             );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.ads.datamanager.v1.RetrieveInsightsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1 ?? '' }`;
             const expectedError = new Error('expected');
-            client.innerApiCalls.ingestAudienceMembers = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.ingestAudienceMembers(request), expectedError);
+            client.innerApiCalls.retrieveInsights = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.retrieveInsights(request), expectedError);
+            const actualRequest = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.retrieveInsights as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
-        it('invokes ingestAudienceMembers with closed client', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+        it('invokes retrieveInsights with closed client', async () => {
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
             });
             await client.initialize();
             const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestAudienceMembersRequest()
+              new protos.google.ads.datamanager.v1.RetrieveInsightsRequest()
             );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.ads.datamanager.v1.RetrieveInsightsRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close().catch(err => {throw err});
-            await assert.rejects(client.ingestAudienceMembers(request), expectedError);
-        });
-    });
-
-    describe('removeAudienceMembers', () => {
-        it('invokes removeAudienceMembers without error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersResponse()
-            );
-            client.innerApiCalls.removeAudienceMembers = stubSimpleCall(expectedResponse);
-            const [response] = await client.removeAudienceMembers(request);
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes removeAudienceMembers without error using callback', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersResponse()
-            );
-            client.innerApiCalls.removeAudienceMembers = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.removeAudienceMembers(
-                    request,
-                    (err?: Error|null, result?: protos.google.ads.datamanager.v1.IRemoveAudienceMembersResponse|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes removeAudienceMembers with error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersRequest()
-            );
-            const expectedError = new Error('expected');
-            client.innerApiCalls.removeAudienceMembers = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.removeAudienceMembers(request), expectedError);
-        });
-
-        it('invokes removeAudienceMembers with closed client', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RemoveAudienceMembersRequest()
-            );
-            const expectedError = new Error('The client has already been closed.');
-            client.close().catch(err => {throw err});
-            await assert.rejects(client.removeAudienceMembers(request), expectedError);
-        });
-    });
-
-    describe('ingestEvents', () => {
-        it('invokes ingestEvents without error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsResponse()
-            );
-            client.innerApiCalls.ingestEvents = stubSimpleCall(expectedResponse);
-            const [response] = await client.ingestEvents(request);
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes ingestEvents without error using callback', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsResponse()
-            );
-            client.innerApiCalls.ingestEvents = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.ingestEvents(
-                    request,
-                    (err?: Error|null, result?: protos.google.ads.datamanager.v1.IIngestEventsResponse|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes ingestEvents with error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsRequest()
-            );
-            const expectedError = new Error('expected');
-            client.innerApiCalls.ingestEvents = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.ingestEvents(request), expectedError);
-        });
-
-        it('invokes ingestEvents with closed client', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.IngestEventsRequest()
-            );
-            const expectedError = new Error('The client has already been closed.');
-            client.close().catch(err => {throw err});
-            await assert.rejects(client.ingestEvents(request), expectedError);
-        });
-    });
-
-    describe('retrieveRequestStatus', () => {
-        it('invokes retrieveRequestStatus without error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusResponse()
-            );
-            client.innerApiCalls.retrieveRequestStatus = stubSimpleCall(expectedResponse);
-            const [response] = await client.retrieveRequestStatus(request);
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes retrieveRequestStatus without error using callback', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusRequest()
-            );
-            const expectedResponse = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusResponse()
-            );
-            client.innerApiCalls.retrieveRequestStatus = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.retrieveRequestStatus(
-                    request,
-                    (err?: Error|null, result?: protos.google.ads.datamanager.v1.IRetrieveRequestStatusResponse|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-        });
-
-        it('invokes retrieveRequestStatus with error', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusRequest()
-            );
-            const expectedError = new Error('expected');
-            client.innerApiCalls.retrieveRequestStatus = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.retrieveRequestStatus(request), expectedError);
-        });
-
-        it('invokes retrieveRequestStatus with closed client', async () => {
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-            });
-            await client.initialize();
-            const request = generateSampleMessage(
-              new protos.google.ads.datamanager.v1.RetrieveRequestStatusRequest()
-            );
-            const expectedError = new Error('The client has already been closed.');
-            client.close().catch(err => {throw err});
-            await assert.rejects(client.retrieveRequestStatus(request), expectedError);
+            await assert.rejects(client.retrieveInsights(request), expectedError);
         });
     });
 
@@ -521,7 +329,7 @@ describe('v1.IngestionServiceClient', () => {
                 account: "accountValue",
                 partner_link: "partnerLinkValue",
             };
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -567,7 +375,7 @@ describe('v1.IngestionServiceClient', () => {
                 account: "accountValue",
                 user_list: "userListValue",
             };
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -613,7 +421,7 @@ describe('v1.IngestionServiceClient', () => {
                 account: "accountValue",
                 user_list_direct_license: "userListDirectLicenseValue",
             };
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -659,7 +467,7 @@ describe('v1.IngestionServiceClient', () => {
                 account: "accountValue",
                 user_list_global_license: "userListGlobalLicenseValue",
             };
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
@@ -706,7 +514,7 @@ describe('v1.IngestionServiceClient', () => {
                 user_list_global_license: "userListGlobalLicenseValue",
                 license_customer_info: "licenseCustomerInfoValue",
             };
-            const client = new ingestionserviceModule.v1.IngestionServiceClient({
+            const client = new marketingdatainsightsserviceModule.v1.MarketingDataInsightsServiceClient({
                 credentials: {client_email: 'bogus', private_key: 'bogus'},
                 projectId: 'bogus',
             });
